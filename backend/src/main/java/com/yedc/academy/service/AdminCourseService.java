@@ -1,6 +1,7 @@
 package com.yedc.academy.service;
 
 import com.yedc.academy.dto.*;
+import com.yedc.academy.exception.BadRequestException;
 import com.yedc.academy.exception.ResourceNotFoundException;
 import com.yedc.academy.mapper.CourseMapper;
 import com.yedc.academy.mapper.SectionMapper;
@@ -115,6 +116,13 @@ public class AdminCourseService {
         String normalizedStatus = status.toUpperCase();
         if (!normalizedStatus.equals("ACTIVE") && !normalizedStatus.equals("INACTIVE")) {
             throw new IllegalArgumentException("Invalid status value. Must be ACTIVE or INACTIVE.");
+        }
+
+        if (normalizedStatus.equals("ACTIVE")) {
+            List<Section> sections = sectionRepository.findAllByCourseIdOrderByDisplayOrderAsc(id);
+            if (sections.isEmpty()) {
+                throw new BadRequestException("A course must contain at least one section before it can be published.");
+            }
         }
 
         course.setStatus(normalizedStatus);
