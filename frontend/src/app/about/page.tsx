@@ -24,6 +24,9 @@ export default function AboutPage() {
           <Link href="/courses" className="hover:text-white transition-colors">Explore Courses</Link>
           <Link href="/about" className="text-white hover:text-white transition-colors">About Us</Link>
           <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
+          {user && user.role === 'ADMIN' && (
+            <Link href="/admin/courses" className="text-indigo-400 hover:text-indigo-355 transition-colors font-semibold">Admin Panel</Link>
+          )}
         </nav>
         <div className="flex items-center gap-4">
           {user ? (

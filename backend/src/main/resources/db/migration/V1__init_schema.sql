@@ -20,3 +20,14 @@ CREATE TABLE account (
 -- Seed initial roles
 INSERT INTO role (name, description) VALUES ('ADMIN', 'Platform Administrator');
 INSERT INTO role (name, description) VALUES ('STUDENT', 'Enrolled Student');
+
+-- Seed default admin account (password: admin123)
+INSERT INTO account (role_id, full_name, email, password, phone, status)
+VALUES (
+    (SELECT id FROM role WHERE name = 'ADMIN'),
+    'YEDC Admin',
+    'admin@yedc.com',
+    '$2a$10$6RpAkQ2CiN4/mlq6FhZDo.ZL1X/9n8fgWC3tce09npn9CcTKfg8IS',
+    '9000000001',
+    'ACTIVE'
+);
