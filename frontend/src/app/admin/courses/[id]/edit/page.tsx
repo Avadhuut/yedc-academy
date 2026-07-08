@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -111,9 +112,9 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     if (!token) return;
     try {
       const [catRes, instRes, courseRes] = await Promise.all([
-        fetch('http://localhost:8080/api/v1/categories'),
-        fetch('http://localhost:8080/api/v1/instructors'),
-        fetch(`http://localhost:8080/api/v1/admin/courses/${params.id}`, {
+        fetch(`${API_BASE_URL}/categories`),
+        fetch(`${API_BASE_URL}/instructors`),
+        fetch(`${API_BASE_URL}/admin/courses/${params.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
@@ -192,7 +193,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     };
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/courses/${params.id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/courses/${params.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     setCurriculumError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/courses/${params.id}/sections`, {
+      const res = await fetch(`${API_BASE_URL}/admin/courses/${params.id}/sections`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -259,7 +260,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     setCurriculumError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/sections/${sectionId}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/sections/${sectionId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -295,7 +296,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     setCurriculumError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/sections/${sectionId}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/sections/${sectionId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -322,7 +323,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     setCurriculumError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/sections/${sectionId}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/sections/${sectionId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -400,7 +401,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     try {
       let res;
       if (lessonModal.mode === 'create') {
-        res = await fetch(`http://localhost:8080/api/v1/admin/sections/${lessonModal.sectionId}/lessons`, {
+        res = await fetch(`${API_BASE_URL}/admin/sections/${lessonModal.sectionId}/lessons`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -409,7 +410,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
           body: JSON.stringify(payload),
         });
       } else {
-        res = await fetch(`http://localhost:8080/api/v1/admin/lessons/${lessonModal.lessonId}`, {
+        res = await fetch(`${API_BASE_URL}/admin/lessons/${lessonModal.lessonId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -442,7 +443,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     setCurriculumError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/lessons/${lessonId}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/lessons/${lessonId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -469,7 +470,7 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
     setCurriculumError(null);
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/lessons/${lesson.id}`, {
+      const res = await fetch(`${API_BASE_URL}/admin/lessons/${lesson.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

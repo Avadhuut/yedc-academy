@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -38,7 +39,7 @@ export default function LoginPage() {
     if (!forgotEmail) return;
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/forgot-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),
@@ -62,7 +63,7 @@ export default function LoginPage() {
     if (!forgotEmail || !resetCode || !newPassword) return;
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/v1/auth/reset-password', {
+      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail, resetCode, newPassword }),

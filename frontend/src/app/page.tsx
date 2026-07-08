@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/courses')
+    fetch(`${API_BASE_URL}/courses`)
       .then((res) => res.json())
       .then((result) => {
         if (result.status === 'SUCCESS' && Array.isArray(result.data)) {

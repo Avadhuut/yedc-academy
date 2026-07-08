@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -45,7 +46,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (!token) return;
 
-    fetch('http://localhost:8080/api/v1/admin/analytics/dashboard', {
+    fetch(`${API_BASE_URL}/admin/analytics/dashboard`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

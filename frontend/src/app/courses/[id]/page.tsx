@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -80,7 +81,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    fetch(`http://localhost:8080/api/v1/courses/${params.id}`, { headers })
+    fetch(`${API_BASE_URL}/courses/${params.id}`, { headers })
       .then((res) => res.json())
       .then((result) => {
         if (result.status === 'SUCCESS' && result.data) {
@@ -97,7 +98,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
 
   // Load reviews separately (public)
   useEffect(() => {
-    fetch(`http://localhost:8080/api/v1/courses/${params.id}/reviews`)
+    fetch(`${API_BASE_URL}/courses/${params.id}/reviews`)
       .then((res) => res.json())
       .then((result) => {
         if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
@@ -129,7 +130,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
 
     try {
       // 1. Create order on the backend
-      const orderRes = await fetch('http://localhost:8080/api/v1/payments/order', {
+      const orderRes = await fetch(`${API_BASE_URL}/payments/order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +158,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
         handler: async function (response: any) {
           setCheckoutLoading(true);
           try {
-            const verifyRes = await fetch('http://localhost:8080/api/v1/payments/verify', {
+            const verifyRes = await fetch(`${API_BASE_URL}/payments/verify`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -202,7 +203,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
       // 3. Direct bypass for local mock key setups
       if (mockMode && (keyId === 'rzp_test_mockKeyId' || !(window as any).Razorpay)) {
         console.log('Mock Mode Direct Verification Bypass Active');
-        const verifyRes = await fetch('http://localhost:8080/api/v1/payments/verify', {
+        const verifyRes = await fetch(`${API_BASE_URL}/payments/verify`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -545,7 +546,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
                     setReviewSubmitting(true);
                     setReviewError('');
                     try {
-                      const res = await fetch(`http://localhost:8080/api/v1/courses/${params.id}/reviews`, {
+                      const res = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                         body: JSON.stringify({ rating: myRating, comment: myComment }),
@@ -553,7 +554,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
                       const result = await res.json();
                       if (result.status === 'SUCCESS') {
                         setReviewSuccess(true);
-                        const refreshed = await fetch(`http://localhost:8080/api/v1/courses/${params.id}/reviews`);
+                        const refreshed = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`);
                         const refreshedData = await refreshed.json();
                         if (refreshedData.status === 'SUCCESS') setReviews(refreshedData.data);
                       } else {
@@ -577,12 +578,12 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
                     onClick={async () => {
                       if (!token) return;
                       try {
-                        await fetch(`http://localhost:8080/api/v1/courses/${params.id}/reviews/mine`, {
+                        await fetch(`${API_BASE_URL}/courses/${params.id}/reviews/mine`, {
                           method: 'DELETE',
                           headers: { 'Authorization': `Bearer ${token}` },
                         });
                         setMyRating(0); setMyComment(''); setReviewSuccess(false);
-                        const refreshed = await fetch(`http://localhost:8080/api/v1/courses/${params.id}/reviews`);
+                        const refreshed = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`);
                         const data = await refreshed.json();
                         if (data.status === 'SUCCESS') setReviews(data.data);
                       } catch { /* ignore */ }

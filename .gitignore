@@ -38,3 +38,8 @@ Thumbs.db
 
 # Docker Data
 postgres_data/
+
+# Production Secrets
+.env
+certbot/
+nginx/conf.d/default.conf

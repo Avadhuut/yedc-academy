@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -32,7 +33,7 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     if (!token) return;
 
-    fetch('http://localhost:8080/api/v1/admin/courses', {
+    fetch(`${API_BASE_URL}/admin/courses`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -53,7 +54,7 @@ export default function AdminCoursesPage() {
     const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/courses/${courseId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/admin/courses/${courseId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

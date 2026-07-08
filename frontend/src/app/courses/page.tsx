@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -33,7 +34,7 @@ export default function CoursesPage() {
 
   // Load categories
   useEffect(() => {
-    fetch('http://localhost:8080/api/v1/categories')
+    fetch(`${API_BASE_URL}/categories`)
       .then((res) => res.json())
       .then((result) => {
         if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
@@ -47,7 +48,7 @@ export default function CoursesPage() {
   useEffect(() => {
     if (searchQuery.trim() !== '') return; // Let search handler take care of keyword query
     setLoading(true);
-    let url = 'http://localhost:8080/api/v1/courses';
+    let url = `${API_BASE_URL}/courses`;
     if (selectedCategory !== null) {
       url += `?categoryId=${selectedCategory}`;
     }
@@ -73,7 +74,7 @@ export default function CoursesPage() {
     setLoading(true);
     setSelectedCategory(null); // clear category filter on keyword submit
 
-    fetch(`http://localhost:8080/api/v1/courses/search?keyword=${encodeURIComponent(searchQuery)}`)
+    fetch(`${API_BASE_URL}/courses/search?keyword=${encodeURIComponent(searchQuery)}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.status === 'SUCCESS' && Array.isArray(result.data)) {

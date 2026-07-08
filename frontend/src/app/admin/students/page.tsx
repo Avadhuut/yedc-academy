@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -33,7 +34,7 @@ export default function AdminStudentsPage() {
   useEffect(() => {
     if (!token) return;
 
-    fetch('http://localhost:8080/api/v1/admin/users', {
+    fetch(`${API_BASE_URL}/admin/users`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -54,7 +55,7 @@ export default function AdminStudentsPage() {
     const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/admin/users/${userId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

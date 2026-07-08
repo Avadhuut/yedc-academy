@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -52,8 +53,8 @@ export default function NewCoursePage() {
     const loadDropdowns = async () => {
       try {
         const [catRes, instRes] = await Promise.all([
-          fetch('http://localhost:8080/api/v1/categories'),
-          fetch('http://localhost:8080/api/v1/instructors'),
+          fetch(`${API_BASE_URL}/categories`),
+          fetch(`${API_BASE_URL}/instructors`),
         ]);
 
         const catData = await catRes.json();
@@ -97,7 +98,7 @@ export default function NewCoursePage() {
     };
 
     try {
-      const res = await fetch('http://localhost:8080/api/v1/admin/courses', {
+      const res = await fetch(`${API_BASE_URL}/admin/courses`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -35,7 +36,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user && token && activeTab === 'courses') {
       setCoursesLoading(true);
-      fetch('http://localhost:8080/api/v1/me/courses', {
+      fetch(`${API_BASE_URL}/me/courses`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -68,7 +69,7 @@ export default function ProfilePage() {
     if (!token) return;
     setDownloadingCertId(courseId);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/courses/${courseId}/certificates/claim`, {
+      const res = await fetch(`${API_BASE_URL}/courses/${courseId}/certificates/claim`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -76,7 +77,7 @@ export default function ProfilePage() {
       });
       const result = await res.json();
       if (result.status === 'SUCCESS' && result.data?.certificateNumber) {
-        window.open(`http://localhost:8080/api/v1/certificates/${result.data.certificateNumber}/download`, '_blank');
+        window.open(`${API_BASE_URL}/certificates/${result.data.certificateNumber}/download`, '_blank');
       } else {
         alert(result.message || 'Failed to claim certificate.');
       }
@@ -103,7 +104,7 @@ export default function ProfilePage() {
     setProfileLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/me', {
+      const response = await fetch(`${API_BASE_URL}/me`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +134,7 @@ export default function ProfilePage() {
     setPasswordLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/v1/me/password', {
+      const response = await fetch(`${API_BASE_URL}/me/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

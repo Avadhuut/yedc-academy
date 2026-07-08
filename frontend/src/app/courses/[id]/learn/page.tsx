@@ -1,4 +1,5 @@
 'use client';
+import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
@@ -71,7 +72,7 @@ export default function LearnPage({ params }: { params: { id: string } }) {
     if (!token) return;
     setDownloadingCert(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/courses/${params.id}/certificates/claim`, {
+      const res = await fetch(`${API_BASE_URL}/courses/${params.id}/certificates/claim`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -79,7 +80,7 @@ export default function LearnPage({ params }: { params: { id: string } }) {
       });
       const result = await res.json();
       if (result.status === 'SUCCESS' && result.data?.certificateNumber) {
-        window.open(`http://localhost:8080/api/v1/certificates/${result.data.certificateNumber}/download`, '_blank');
+        window.open(`${API_BASE_URL}/certificates/${result.data.certificateNumber}/download`, '_blank');
       } else {
         alert(result.message || 'Failed to claim certificate.');
       }
@@ -97,7 +98,7 @@ export default function LearnPage({ params }: { params: { id: string } }) {
 
     setLoading(true);
     // Fetch course details
-    fetch(`http://localhost:8080/api/v1/courses/${params.id}`, {
+    fetch(`${API_BASE_URL}/courses/${params.id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then((res) => res.json())
@@ -128,7 +129,7 @@ export default function LearnPage({ params }: { params: { id: string } }) {
       });
 
     // Fetch user progress for this course
-    fetch(`http://localhost:8080/api/v1/me/progress?courseId=${params.id}`, {
+    fetch(`${API_BASE_URL}/me/progress?courseId=${params.id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then((res) => res.json())
@@ -152,7 +153,7 @@ export default function LearnPage({ params }: { params: { id: string } }) {
     setLessonLoadError('');
     setLastReportedPercentage(0);
     
-    fetch(`http://localhost:8080/api/v1/lessons/${activeLesson.id}`, {
+    fetch(`${API_BASE_URL}/lessons/${activeLesson.id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then((res) => res.json())
@@ -178,7 +179,7 @@ export default function LearnPage({ params }: { params: { id: string } }) {
   const reportProgress = (lessonId: number, watchPercentage: number, completed: boolean) => {
     if (!token) return;
 
-    fetch(`http://localhost:8080/api/v1/lessons/${lessonId}/progress`, {
+    fetch(`${API_BASE_URL}/lessons/${lessonId}/progress`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
