@@ -18,21 +18,21 @@ export default function LoginPage() {
   const [resetMode, setResetMode] = useState(false);
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
     setLoading(true);
     try {
       await login(email, password);
-      router.push('/profile');
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect') || '/profile';
+      router.push(redirect);
     } catch (err) {
       // error is handled by AuthContext
     } finally {
       setLoading(false);
     }
   };
-
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail) return;

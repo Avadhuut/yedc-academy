@@ -14,21 +14,21 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !password) return;
     setLoading(true);
     try {
       await register(fullName, email, password, phone || undefined);
-      router.push('/profile');
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect') || '/profile';
+      router.push(redirect);
     } catch (err) {
       // error is handled by AuthContext
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <main className="min-h-screen bg-[#09090b] flex items-center justify-center relative overflow-hidden px-4 py-12">
       {/* Background Blobs */}

@@ -18,4 +18,7 @@ public class CourseDetailsResponse {
     private CategoryResponse category;
     private InstructorResponse instructor;
     private List<SectionResponse> sections;
+    private boolean enrolled;
+    private Double averageRating;
+    private Long reviewCount;
 }

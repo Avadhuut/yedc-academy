@@ -4,8 +4,10 @@ import com.yedc.academy.dto.ApiResponse;
 import com.yedc.academy.dto.CourseDetailsResponse;
 import com.yedc.academy.dto.CourseResponse;
 import com.yedc.academy.service.CourseService;
+import com.yedc.academy.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,8 +29,11 @@ public class CourseController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseDetailsResponse>> getCourseDetails(@PathVariable("id") Long id) {
-        CourseDetailsResponse course = courseService.getCourseDetails(id);
+    public ResponseEntity<ApiResponse<CourseDetailsResponse>> getCourseDetails(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        Long accountId = userPrincipal != null ? userPrincipal.getId() : null;
+        CourseDetailsResponse course = courseService.getCourseDetails(id, accountId);
         return ResponseEntity.ok(
                 new ApiResponse<>("SUCCESS", "Course details retrieved successfully.", course)
         );

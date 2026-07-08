@@ -524,10 +524,14 @@ export default function EditCoursePage({ params }: { params: { id: string } }) {
       <header className="z-10 bg-neutral-950/60 backdrop-blur-md border-b border-neutral-900/60 px-6 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
           <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
-          Admin Dashboard
+          YEDC Admin
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
+          <Link href="/admin" className="hover:text-white transition-colors">Dashboard</Link>
           <Link href="/admin/courses" className="text-white hover:text-white transition-colors">Courses</Link>
+          <Link href="/admin/students" className="hover:text-white transition-colors">Students</Link>
+          <Link href="/admin/payments" className="hover:text-white transition-colors">Payments</Link>
+          <span className="text-neutral-700">|</span>
           <Link href="/courses" className="hover:text-white transition-colors">Public Site</Link>
         </nav>
       </header>

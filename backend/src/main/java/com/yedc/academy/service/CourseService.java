@@ -11,7 +11,9 @@ import com.yedc.academy.model.Course;
 import com.yedc.academy.model.Lesson;
 import com.yedc.academy.model.Section;
 import com.yedc.academy.repository.CourseRepository;
+import com.yedc.academy.repository.EnrollmentRepository;
 import com.yedc.academy.repository.LessonRepository;
+import com.yedc.academy.repository.ReviewRepository;
 import com.yedc.academy.repository.SectionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final SectionRepository sectionRepository;
     private final LessonRepository lessonRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final ReviewRepository reviewRepository;
     private final CourseMapper courseMapper;
     private final SectionMapper sectionMapper;
 
@@ -53,19 +57,25 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    public CourseDetailsResponse getCourseDetails(Long courseId) {
+    public CourseDetailsResponse getCourseDetails(Long courseId, Long accountId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+
+        boolean isEnrolled = false;
+        if (accountId != null) {
+            isEnrolled = enrollmentRepository.existsByAccountIdAndCourseId(accountId, courseId);
+        }
 
         List<Section> sections = sectionRepository.findAllByCourseIdOrderByDisplayOrderAsc(courseId);
         List<SectionResponse> sectionResponses = new ArrayList<>();
 
         for (Section section : sections) {
             List<Lesson> lessons = lessonRepository.findAllBySectionIdOrderByDisplayOrderAsc(section.getId());
+            boolean finalIsEnrolled = isEnrolled;
             List<LessonResponse> lessonResponses = lessons.stream()
                     .map(lesson -> {
                         LessonResponse res = sectionMapper.toLessonResponse(lesson);
-                        if (!lesson.getPreviewEnabled()) {
+                        if (!finalIsEnrolled && !lesson.getPreviewEnabled()) {
                             res.setVideoUrl(null);
                         }
                         return res;
@@ -75,6 +85,10 @@ public class CourseService {
             sectionResponses.add(sectionMapper.toResponse(section, lessonResponses));
         }
 
-        return courseMapper.toDetailsResponse(course, sectionResponses);
+        CourseDetailsResponse detailsResponse = courseMapper.toDetailsResponse(course, sectionResponses);
+        detailsResponse.setEnrolled(isEnrolled);
+        detailsResponse.setAverageRating(reviewRepository.findAverageRatingByCourseId(courseId));
+        detailsResponse.setReviewCount(reviewRepository.countByCourseId(courseId));
+        return detailsResponse;
     }
 }

@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function ProfilePage() {
-  const { user, token, logout, updateUser } = useAuth();
+  const { user, token, loading, logout, updateUser } = useAuth();
   const router = useRouter();
 
   // Profile fields state
@@ -23,20 +24,71 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  // Courses states
+  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
+  const [downloadingCertId, setDownloadingCertId] = useState<number | null>(null);
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'courses'>('courses');
+
+  // Load enrolled courses
+  useEffect(() => {
+    if (user && token && activeTab === 'courses') {
+      setCoursesLoading(true);
+      fetch('http://localhost:8080/api/v1/me/courses', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
+          setEnrolledCourses(result.data);
+        }
+      })
+      .catch((err) => console.error('Failed to load courses', err))
+      .finally(() => setCoursesLoading(false));
+    }
+  }, [user, token, activeTab]);
 
   // Check auth
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-    } else {
-      setFullName(user.fullName || '');
-      setPhone(user.phone || '');
-      setProfileImage(user.profileImage || '');
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else {
+        setFullName(user.fullName || '');
+        setPhone(user.phone || '');
+        setProfileImage(user.profileImage || '');
+      }
     }
-  }, [user, router]);
+  }, [user, loading, router]);
 
-  if (!user) {
+  const handleDownloadCertificate = async (courseId: number) => {
+    if (!token) return;
+    setDownloadingCertId(courseId);
+    try {
+      const res = await fetch(`http://localhost:8080/api/v1/courses/${courseId}/certificates/claim`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await res.json();
+      if (result.status === 'SUCCESS' && result.data?.certificateNumber) {
+        window.open(`http://localhost:8080/api/v1/certificates/${result.data.certificateNumber}/download`, '_blank');
+      } else {
+        alert(result.message || 'Failed to claim certificate.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to server.');
+    } finally {
+      setDownloadingCertId(null);
+    }
+  };
+
+  if (loading || !user) {
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
@@ -151,6 +203,20 @@ export default function ProfilePage() {
           </div>
 
           <button
+            onClick={() => setActiveTab('courses')}
+            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-3 ${
+              activeTab === 'courses'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
+                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            My Courses
+          </button>
+
+          <button
             onClick={() => setActiveTab('profile')}
             className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-3 ${
               activeTab === 'profile'
@@ -182,6 +248,88 @@ export default function ProfilePage() {
         {/* Tab content panel */}
         <section className="md:col-span-3">
           <div className="bg-neutral-900/40 backdrop-blur border border-neutral-800/80 rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/35">
+            {activeTab === 'courses' && (
+              <div>
+                <h2 className="text-xl font-bold text-white mb-2 font-sans">My Enrolled Courses</h2>
+                <p className="text-xs text-neutral-500 mb-6 font-semibold">Access your course library and track your progress</p>
+
+                {coursesLoading ? (
+                  <div className="flex justify-center py-12">
+                    <div className="w-8 h-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
+                  </div>
+                ) : enrolledCourses.length === 0 ? (
+                  <div className="text-center py-16 border border-dashed border-neutral-800 rounded-2xl bg-neutral-950/20">
+                    <p className="text-sm text-neutral-500 mb-5 font-semibold">You have not enrolled in any masterclasses yet.</p>
+                    <Link
+                      href="/courses"
+                      className="inline-flex py-3 px-6 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-indigo-600/20 border border-indigo-500/30"
+                    >
+                      Browse Masterclasses
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {enrolledCourses.map((item) => (
+                      <div
+                        key={item.id}
+                        className="group bg-neutral-950 border border-neutral-900 rounded-xl overflow-hidden hover:border-neutral-800 transition-all flex flex-col shadow-lg shadow-black/15"
+                      >
+                        <div className="h-36 w-full relative bg-neutral-900 overflow-hidden">
+                          <img
+                            src={item.courseThumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600'}
+                            alt={item.courseTitle}
+                            className="w-full h-full object-cover group-hover:scale-102 transition-all duration-350"
+                          />
+                        </div>
+                        <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
+                          <div>
+                            <h3 className="text-sm font-bold text-white leading-snug line-clamp-1 group-hover:text-indigo-400 transition-colors">
+                              {item.courseTitle}
+                            </h3>
+                            <p className="text-[10px] text-neutral-500 line-clamp-2 mt-1 font-semibold leading-relaxed">
+                              {item.courseSubtitle}
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+                              <span>Progress</span>
+                              <span>{item.progressPercentage}%</span>
+                            </div>
+                            <div className="w-full bg-neutral-900 rounded-full h-1.5 overflow-hidden border border-neutral-850">
+                              <div
+                                  className="bg-indigo-500 h-1.5 rounded-full transition-all duration-550"
+                                  style={{ width: `${item.progressPercentage}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/courses/${item.courseId}/learn`}
+                              className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-250 hover:text-white text-xs font-bold rounded-lg text-center transition-all block cursor-pointer"
+                            >
+                              {item.progressPercentage === 0 ? 'Start Course' : item.progressPercentage === 100 ? 'Review Syllabus' : 'Resume Learning'}
+                            </Link>
+                            
+                            {item.progressPercentage === 100 && (
+                              <button
+                                onClick={() => handleDownloadCertificate(item.courseId)}
+                                disabled={downloadingCertId === item.courseId}
+                                className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/30 text-white text-xs font-bold rounded-lg text-center transition-all cursor-pointer disabled:opacity-50"
+                              >
+                                {downloadingCertId === item.courseId ? 'Claiming...' : '🎓 Certificate'}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-2">Account Settings</h2>

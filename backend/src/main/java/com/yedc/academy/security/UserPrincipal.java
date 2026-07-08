@@ -22,6 +22,7 @@ public class UserPrincipal implements UserDetails {
     @JsonIgnore
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
+    private boolean enabled;
 
     public static UserPrincipal create(Account account) {
         List<GrantedAuthority> authorities = Collections.singletonList(
@@ -33,7 +34,8 @@ public class UserPrincipal implements UserDetails {
                 account.getFullName(),
                 account.getEmail(),
                 account.getPassword(),
-                authorities
+                authorities,
+                "ACTIVE".equalsIgnoreCase(account.getStatus())
         );
     }
 
@@ -59,7 +61,7 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
     @Override
