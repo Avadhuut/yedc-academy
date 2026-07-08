@@ -112,36 +112,133 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
       .catch(() => {});
   }, [params.id, user]);
 
-  const handleEnrollSubmit = () => {
+  // Load Razorpay Script dynamically
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const handleEnrollSubmit = async () => {
     setCheckoutLoading(true);
     setCheckoutError('');
-    fetch('http://localhost:8080/api/v1/enrollments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        courseId: course?.id,
-        paymentMethod: paymentMethod === 'UPI' ? 'MOCK_UPI' : 'MOCK_CARD'
-      })
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.status === 'SUCCESS' && result.data) {
+
+    try {
+      // 1. Create order on the backend
+      const orderRes = await fetch('http://localhost:8080/api/v1/payments/order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ courseId: course?.id })
+      });
+      const orderResult = await orderRes.json();
+
+      if (orderResult.status !== 'SUCCESS' || !orderResult.data) {
+        throw new Error(orderResult.message || 'Failed to create payment order.');
+      }
+
+      const { orderId, amount, currency, keyId, mockMode } = orderResult.data;
+
+      // 2. Configure Razorpay checkout options
+      const options = {
+        key: keyId,
+        amount: amount,
+        currency: currency,
+        name: 'YEDC Academy',
+        description: `Enrollment for ${course?.title}`,
+        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=60&h=60',
+        order_id: orderId,
+        handler: async function (response: any) {
+          setCheckoutLoading(true);
+          try {
+            const verifyRes = await fetch('http://localhost:8080/api/v1/payments/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature
+              })
+            });
+            const verifyResult = await verifyRes.json();
+
+            if (verifyResult.status === 'SUCCESS') {
+              setCheckoutSuccess(true);
+              setTransactionId(response.razorpay_payment_id);
+              setCourse((prev) => prev ? { ...prev, enrolled: true } : null);
+            } else {
+              setCheckoutError(verifyResult.message || 'Payment signature verification failed.');
+            }
+          } catch (err) {
+            setCheckoutError('Connection to payment verification server failed.');
+          } finally {
+            setCheckoutLoading(false);
+          }
+        },
+        prefill: {
+          name: user?.fullName || '',
+          email: user?.email || '',
+          contact: user?.phone || ''
+        },
+        theme: {
+          color: '#4f46e5'
+        },
+        modal: {
+          ondismiss: function () {
+            setCheckoutLoading(false);
+          }
+        }
+      };
+
+      // 3. Direct bypass for local mock key setups
+      if (mockMode && (keyId === 'rzp_test_mockKeyId' || !(window as any).Razorpay)) {
+        console.log('Mock Mode Direct Verification Bypass Active');
+        const verifyRes = await fetch('http://localhost:8080/api/v1/payments/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            razorpayOrderId: orderId,
+            razorpayPaymentId: 'pay_mock_' + Math.random().toString(36).substring(2, 15).toUpperCase(),
+            razorpaySignature: 'mock_signature'
+          })
+        });
+        const verifyResult = await verifyRes.json();
+
+        if (verifyResult.status === 'SUCCESS') {
           setCheckoutSuccess(true);
-          setTransactionId(result.data.transactionId);
+          setTransactionId('pay_mock_direct');
           setCourse((prev) => prev ? { ...prev, enrolled: true } : null);
         } else {
-          setCheckoutError(result.message || 'Payment failed.');
+          setCheckoutError(verifyResult.message || 'Mock verification bypass failed.');
         }
-      })
-      .catch((err) => {
-        setCheckoutError('Connection to payment server failed.');
-      })
-      .finally(() => {
         setCheckoutLoading(false);
-      });
+        return;
+      }
+
+      // Check if Razorpay SDK is loaded
+      if (!(window as any).Razorpay) {
+        throw new Error('Payment gateway failed to initialize. Please check your internet connection.');
+      }
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+
+    } catch (err: any) {
+      setCheckoutError(err.message || 'An error occurred during checkout.');
+      setCheckoutLoading(false);
+    }
   };
 
   if (loading) {

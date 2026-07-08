@@ -26,3 +26,8 @@ logging:
   level:
     org.springframework.security: INFO
     org.hibernate.SQL: DEBUG
+
+razorpay:
+  key:
+    id: ${RAZORPAY_KEY_ID:rzp_test_mockKeyId}
+    secret: ${RAZORPAY_KEY_SECRET:mockKeySecret}

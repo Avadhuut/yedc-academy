@@ -10,4 +10,5 @@ import java.util.List;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findAllByEnrollmentId(Long enrollmentId);
     List<Payment> findAllByOrderByPaidAtDesc();
+    java.util.Optional<Payment> findByTransactionId(String transactionId);
 }
