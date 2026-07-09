@@ -3,6 +3,7 @@ import API_BASE_URL from '@/config/api';
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface Lesson {
@@ -51,6 +52,7 @@ interface ReviewData {
 
 export default function CourseDetailsPage({ params }: { params: { id: string } }) {
   const { user, token } = useAuth();
+  const router = useRouter();
   const [course, setCourse] = useState<CourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [openSections, setOpenSections] = useState<Record<number, boolean>>({});
@@ -785,7 +787,7 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
                   onClick={() => {
                     setShowCheckout(false);
                     setCheckoutSuccess(false);
-                    window.location.href = `/courses/${course.id}/learn`;
+                    router.push(`/courses/${course.id}/learn`);
                   }}
                   className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer border border-indigo-500/30 text-center block shadow-lg shadow-indigo-600/20"
                 >

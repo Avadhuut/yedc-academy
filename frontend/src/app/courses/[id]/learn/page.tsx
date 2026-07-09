@@ -45,7 +45,7 @@ interface ProgressRecord {
 }
 
 export default function LearnPage({ params }: { params: { id: string } }) {
-  const { user, token } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
   const router = useRouter();
   
   // Data States
@@ -63,10 +63,10 @@ export default function LearnPage({ params }: { params: { id: string } }) {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push(`/login?redirect=/courses/${params.id}/learn`);
     }
-  }, [user, router, params.id]);
+  }, [user, authLoading, router, params.id]);
 
   const handleDownloadCertificate = async () => {
     if (!token) return;
