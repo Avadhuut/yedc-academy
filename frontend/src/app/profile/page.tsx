@@ -171,10 +171,19 @@ export default function ProfilePage() {
 
       {/* Header / Navbar */}
       <header className="z-10 bg-neutral-950/80 backdrop-blur border-b border-neutral-900/80 px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
           <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
           YEDC Academy
-        </div>
+        </Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
+          <Link href="/" className="hover:text-white transition-colors">Home</Link>
+          <Link href="/courses" className="hover:text-white transition-colors">Explore Courses</Link>
+          <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
+          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
+          {user && user.role === 'ADMIN' && (
+            <Link href="/admin/courses" className="text-indigo-400 hover:text-indigo-350 transition-colors font-semibold">Admin Panel</Link>
+          )}
+        </nav>
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-white">{user.fullName}</p>

@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect') || '/profile';
+      const redirect = params.get('redirect') || '/';
       router.push(redirect);
     } catch (err) {
       // error is handled by AuthContext
