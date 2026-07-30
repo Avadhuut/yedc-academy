@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { inter, manrope, jetbrainsMono } from "@/app/fonts";
 
 export const metadata: Metadata = {
   title: "YEDC Academy | India's Most Trusted Entrepreneurship Platform",
@@ -13,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
+      <body className="bg-background text-[#0F172A] font-sans antialiased selection:bg-[#D4AF37]/30 selection:text-white">
         <AuthProvider>
           {children}
         </AuthProvider>

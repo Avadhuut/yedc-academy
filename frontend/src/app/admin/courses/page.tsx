@@ -1,10 +1,13 @@
-'use client';
-import API_BASE_URL from '@/config/api';
-
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+"use client";
+import API_BASE_URL from "@/config/api";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { AdminNavbar } from "@/components/AdminNavbar";
+import { Footer } from "@/components/Footer";
+import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import { Shield, Plus } from "lucide-react";
 
 interface Course {
   id: number;
@@ -25,8 +28,8 @@ export default function AdminCoursesPage() {
 
   // Redirect non-admins
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
-      router.push('/');
+    if (!loading && (!user || user.role !== "ADMIN")) {
+      router.push("/");
     }
   }, [user, loading, router]);
 
@@ -35,128 +38,110 @@ export default function AdminCoursesPage() {
 
     fetch(`${API_BASE_URL}/admin/courses`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
       .then((result) => {
-        if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
+        if (result.status === "SUCCESS" && Array.isArray(result.data)) {
           setCourses(result.data);
         }
       })
-      .catch((err) => console.error('Failed to load courses', err))
+      .catch((err) => console.error("Failed to load courses", err))
       .finally(() => setLoading(false));
   }, [token]);
 
   const toggleStatus = async (courseId: number, currentStatus: string) => {
     if (!token) return;
     setUpdatingId(courseId);
-    const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     try {
       const res = await fetch(`${API_BASE_URL}/admin/courses/${courseId}/status`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ status: newStatus }),
       });
 
       const result = await res.json();
-      if (res.ok && result.status === 'SUCCESS') {
+      if (res.ok && result.status === "SUCCESS") {
         setCourses((prev) =>
           prev.map((c) => (c.id === courseId ? { ...c, status: newStatus } : c))
         );
       } else {
-        alert(result.message || 'Failed to update status');
+        alert(result.message || "Failed to update status");
       }
     } catch (err) {
       console.error(err);
-      alert('Error updating status');
+      alert("Error updating status");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  if (loading || !user || user.role !== 'ADMIN') {
+  if (loading || !user || user.role !== "ADMIN") {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-      </div>
+      <main className="min-h-screen bg-background flex flex-col font-sans">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin" />
+        </div>
+      </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-neutral-200 relative overflow-hidden flex flex-col">
-      {/* Background blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Global Header */}
-      <header className="z-10 bg-neutral-950/60 backdrop-blur-md border-b border-neutral-900/60 px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
-          <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
-          YEDC Admin
-        </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
-          <Link href="/admin" className="hover:text-white transition-colors">Dashboard</Link>
-          <Link href="/admin/courses" className="text-white hover:text-white transition-colors">Courses</Link>
-          <Link href="/admin/students" className="hover:text-white transition-colors">Students</Link>
-          <Link href="/admin/payments" className="hover:text-white transition-colors">Payments</Link>
-          <span className="text-neutral-700">|</span>
-          <Link href="/courses" className="hover:text-white transition-colors">Public Site</Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          <span className="text-xs font-semibold text-neutral-400">Control Panel</span>
-        </div>
-      </header>
+    <main className="min-h-screen bg-background text-primaryText flex flex-col font-sans">
+      <AdminNavbar />
 
       {/* Management Grid */}
-      <section className="z-10 max-w-5xl w-full mx-auto px-6 py-12 flex-1 flex flex-col">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white">Course Management</h1>
-            <p className="text-sm text-neutral-400">Add, configure, and publish academy modules</p>
+      <section className="z-10 max-w-5xl w-full mx-auto px-6 py-12 flex-1 flex flex-col space-y-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold text-primaryText font-heading">Course Management</h1>
+            <p className="text-xs text-secondaryText font-medium">Add, configure, and publish academy modules</p>
           </div>
-          <Link
-            href="/admin/courses/new"
-            className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-600/20 border border-indigo-500/30 transition-all"
-          >
-            + Create New Course
+          <Link href="/admin/courses/new">
+            <PrimaryButton className="h-10 text-xs px-4">
+              <Plus className="w-4 h-4" /> Create New Course
+            </PrimaryButton>
           </Link>
         </div>
 
         {/* Courses Table */}
-        <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl overflow-hidden shadow-xl shadow-black/20">
+        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-neutral-800 bg-neutral-950/40 text-neutral-400 uppercase font-semibold tracking-wider">
-                  <th className="px-6 py-4">Title</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4">Instructor</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                <tr className="border-b border-border bg-slate-50 text-secondaryText uppercase font-bold tracking-wider">
+                  <th className="px-6 py-4 font-heading">Title</th>
+                  <th className="px-6 py-4 font-heading">Category</th>
+                  <th className="px-6 py-4 font-heading">Instructor</th>
+                  <th className="px-6 py-4 font-heading">Price</th>
+                  <th className="px-6 py-4 font-heading">Status</th>
+                  <th className="px-6 py-4 text-right font-heading">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60 font-medium">
+              <tbody className="divide-y divide-border font-medium text-secondaryText">
                 {courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-neutral-900/10 transition-colors">
+                  <tr key={course.id} className="hover:bg-surface-hover transition-colors">
                     <td className="px-6 py-4">
-                      <div className="text-white font-bold">{course.title}</div>
-                      <div className="text-[10px] text-neutral-500 font-semibold">{course.level}</div>
+                      <div className="text-primaryText font-bold font-heading">{course.title}</div>
+                      <div className="text-[10px] text-mutedText font-semibold mt-0.5">{course.level}</div>
                     </td>
-                    <td className="px-6 py-4 text-neutral-300">{course.category.name}</td>
-                    <td className="px-6 py-4 text-neutral-300">{course.instructor.name}</td>
-                    <td className="px-6 py-4 text-neutral-300">₹{course.price}</td>
+                    <td className="px-6 py-4">{course.category.name}</td>
+                    <td className="px-6 py-4">{course.instructor.name}</td>
+                    <td className="px-6 py-4 text-primaryText font-semibold">₹{course.price}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-                        course.status === 'ACTIVE'
-                          ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                          : 'bg-neutral-800 text-neutral-500 border border-neutral-700/60'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                          course.status === "ACTIVE"
+                            ? "bg-brandEmerald/10 text-brandEmerald border border-brandEmerald/20"
+                            : "bg-slate-100 text-mutedText border border-border"
+                        }`}
+                      >
                         {course.status}
                       </span>
                     </td>
@@ -164,19 +149,18 @@ export default function AdminCoursesPage() {
                       <button
                         onClick={() => toggleStatus(course.id, course.status)}
                         disabled={updatingId === course.id}
-                        className={`px-3 py-1.5 rounded text-[10px] font-bold border transition-all cursor-pointer ${
-                          course.status === 'ACTIVE'
-                            ? 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700'
-                            : 'bg-green-600/10 text-green-400 border-green-500/20 hover:bg-green-600/20'
+                        className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all cursor-pointer ${
+                          course.status === "ACTIVE"
+                            ? "bg-transparent text-secondaryText border-border hover:text-primaryText hover:border-slate-300"
+                            : "bg-brandEmerald/10 text-brandEmerald border border-brandEmerald/25 hover:bg-brandEmerald/20"
                         }`}
                       >
-                        {course.status === 'ACTIVE' ? 'Archive' : 'Publish'}
+                        {course.status === "ACTIVE" ? "Archive" : "Publish"}
                       </button>
-                      <Link
-                        href={`/admin/courses/${course.id}/edit`}
-                        className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 border border-neutral-850 text-neutral-300 hover:text-white rounded text-[10px] font-bold transition-all"
-                      >
-                        Edit
+                      <Link href={`/admin/courses/${course.id}/edit`}>
+                        <button className="px-3 py-1.5 bg-transparent border border-border hover:border-gold/50 text-primaryText rounded-xl text-[10px] font-bold transition-all cursor-pointer">
+                          Edit
+                        </button>
                       </Link>
                     </td>
                   </tr>
@@ -186,21 +170,14 @@ export default function AdminCoursesPage() {
           </div>
 
           {courses.length === 0 && (
-            <div className="py-20 text-center text-neutral-500 font-semibold">
+            <div className="py-20 text-center text-secondaryText font-medium text-xs">
               No courses configured. Click the button above to launch one!
             </div>
           )}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-neutral-950 border-t border-neutral-900 py-8 px-6 mt-12">
-        <div className="max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-xs text-neutral-600 font-medium">
-            © 2026 Young Entrepreneur Development Centre. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

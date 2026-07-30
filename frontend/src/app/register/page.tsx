@@ -1,148 +1,244 @@
-'use client';
-
-import React, { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+"use client";
+import React, { useState } from "react";
+import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, AlertTriangle } from "lucide-react";
 
 export default function RegisterPage() {
   const { register, error, clearError } = useAuth();
   const router = useRouter();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [validationError, setValidationError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email || !password) return;
+    if (!fullName.trim() || !email.trim() || !password.trim()) {
+      setValidationError("Please fill in all required fields.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setValidationError("Password must be at least 8 characters long.");
+      return;
+    }
+    setValidationError("");
+
     setLoading(true);
     try {
-      await register(fullName, email, password, phone || undefined);
+      await register(fullName, email, password);
       const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect') || '/';
+      const redirect = params.get("redirect") || "/";
       router.push(redirect);
     } catch (err) {
-      // error is handled by AuthContext
+      // handled by AuthContext
     } finally {
       setLoading(false);
     }
   };
+
+  const activeError = validationError || error;
+
   return (
-    <main className="min-h-screen bg-[#09090b] flex items-center justify-center relative overflow-hidden px-4 py-12">
-      {/* Background Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none" />
+    <main className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-2 sm:p-4 font-sans relative overflow-hidden">
+      {/* Background Soft Glow */}
+      <div className="w-96 h-96 rounded-full bg-gold/10 blur-3xl absolute -top-24 -left-24 pointer-events-none" />
 
-      <div className="w-full max-w-md z-10">
-        {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
-            <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
-            YEDC Academy
-          </Link>
-          <p className="text-sm text-neutral-500 mt-2">India's Entrepreneurship Education Hub</p>
-        </div>
-
-        {/* Auth Box */}
-        <div className="bg-neutral-900/60 backdrop-blur-xl border border-neutral-800/80 rounded-2xl p-8 shadow-2xl shadow-black/50">
-          <h2 className="text-2xl font-bold text-white mb-2">Create an account</h2>
-          <p className="text-sm text-neutral-400 mb-6">Join YEDC Academy and start your journey today</p>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-lg mb-6 flex justify-between items-center animate-shake">
-              <span>{error}</span>
-              <button onClick={clearError} className="text-red-400 hover:text-red-300 transition-colors font-bold ml-2">✕</button>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Full Name</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => { setFullName(e.target.value); if (error) clearError(); }}
-                required
-                placeholder="John Doe"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-              />
+      {/* Main Split Card Container */}
+      <div className="max-w-[900px] w-full bg-white border border-slate-200/80 rounded-[26px] overflow-hidden shadow-xl relative z-10 grid grid-cols-1 lg:grid-cols-12 items-stretch my-auto">
+        
+        {/* Left Column: Form Section (7 Cols) */}
+        <div className="lg:col-span-7 p-4 sm:p-5 lg:p-6 flex flex-col justify-between space-y-2.5">
+          
+          <div className="space-y-2.5">
+            {/* Top Branding Header (Compact Rounded Logo Badge + Name + Subtitle) */}
+            <div className="flex flex-col items-center justify-center text-center pt-1">
+              <Link href="/" className="group flex flex-col items-center gap-1.5 hover:opacity-95 transition-opacity">
+                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-[16px] overflow-hidden bg-white border border-slate-200/90 p-1.5 shadow-2xs shrink-0 group-hover:scale-105 transition-transform duration-300">
+                  <Image
+                    src="/logo.png"
+                    alt="YEDC Academy"
+                    fill
+                    className="object-contain p-0.5"
+                  />
+                </div>
+                <div className="flex flex-col items-center leading-tight space-y-0.5">
+                  <span className="font-heading font-black text-lg sm:text-xl text-[#855B00] tracking-tight group-hover:text-gold transition-colors">
+                    YEDC Academy
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-bold text-[#855B00]/90 tracking-tight">
+                    युवा उद्योजक विकास केंद्र
+                  </span>
+                </div>
+              </Link>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); if (error) clearError(); }}
-                required
-                placeholder="john@company.com"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-              />
+            {/* Title & Subtitle */}
+            <div className="space-y-0.5 text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl font-black text-[#0F172A] font-heading tracking-tight">
+                Start Your Business Journey
+              </h1>
+              <p className="text-[11px] text-slate-500 font-medium leading-relaxed max-w-sm">
+                Join over 12,000+ ambitious students and professionals mastering the art of business.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Phone Number (Optional)</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 99999 99999"
-                className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); if (error) clearError(); }}
-                  required
-                  placeholder="•••••••• (Min 6 chars)"
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50 transition-all pr-10"
-                />
+            {/* Error Notification */}
+            {activeError && (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-[11px] py-1.5 px-3 rounded-[10px]">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                <span className="font-bold flex-1">{activeError}</span>
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300 transition-colors"
+                  onClick={() => {
+                    setValidationError("");
+                    if (error) clearError();
+                  }}
+                  className="text-red-400 hover:text-red-600 font-black text-xs cursor-pointer"
                 >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Registration Form */}
+            <form onSubmit={handleSubmit} className="space-y-2.5">
+              
+              {/* Full Name */}
+              <div className="space-y-0.5">
+                <label className="block text-[11px] font-bold text-slate-600">Full Name</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      if (activeError) setValidationError("");
+                    }}
+                    required
+                    placeholder="John Doe"
+                    className="w-full h-10 pl-9 pr-3 rounded-[10px] bg-[#F0F4FF]/50 border border-slate-200 hover:border-slate-300 focus:border-[#855B00] focus:bg-white text-[#0F172A] placeholder-slate-400 text-xs font-semibold transition-all focus:outline-none"
+                  />
+                  <User className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-0.5">
+                <label className="block text-[11px] font-bold text-slate-600">Email Address</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (activeError) setValidationError("");
+                    }}
+                    required
+                    placeholder="you@example.com"
+                    className="w-full h-10 pl-9 pr-3 rounded-[10px] bg-[#F0F4FF]/50 border border-slate-200 hover:border-slate-300 focus:border-[#855B00] focus:bg-white text-[#0F172A] placeholder-slate-400 text-xs font-semibold transition-all focus:outline-none"
+                  />
+                  <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-0.5">
+                <label className="block text-[11px] font-bold text-slate-600">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (activeError) setValidationError("");
+                    }}
+                    required
+                    placeholder="••••••••"
+                    className="w-full h-10 pl-9 pr-9 rounded-[10px] bg-[#F0F4FF]/50 border border-slate-200 hover:border-slate-300 focus:border-[#855B00] focus:bg-white text-[#0F172A] placeholder-slate-400 text-xs font-semibold transition-all focus:outline-none"
+                  />
+                  <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+                <p className="text-[9.5px] text-slate-400 font-medium pt-0.5">
+                  Must be at least 8 characters long.
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-1">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-10 rounded-full bg-gold hover:bg-gold-light text-[#0F172A] font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {loading ? (
+                    <div className="w-3.5 h-3.5 border-2 border-[#0F172A]/20 border-t-[#0F172A] rounded-full animate-spin" />
                   ) : (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
                   )}
                 </button>
               </div>
+
+            </form>
+          </div>
+
+          {/* Already have an account? Login */}
+          <div className="text-[11px] text-slate-500 text-center font-semibold pt-1">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-[#0F172A] hover:text-gold font-bold underline underline-offset-2 transition-colors"
+            >
+              Login
+            </Link>
+          </div>
+
+        </div>
+
+        {/* Right Column: Testimonial Photo Card (5 Cols) */}
+        <div className="lg:col-span-5 relative hidden lg:block min-h-[440px] overflow-hidden bg-slate-900">
+          <Image
+            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80"
+            alt="Business Education Masterclass"
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-transparent p-6 flex flex-col justify-end text-white space-y-2.5">
+            
+            {/* Stars */}
+            <div className="flex gap-1 text-gold text-xs">
+              {"★".repeat(5)}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-500 transition-all cursor-pointer shadow-lg shadow-indigo-600/25 border border-indigo-500/30 flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-              ) : 'Sign Up'}
-            </button>
-          </form>
-
-          <div className="text-center mt-6">
-            <p className="text-sm text-neutral-500">
-              Already have an account?{' '}
-              <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
-                Sign In
-              </Link>
+            {/* Testimonial Quote */}
+            <p className="text-xs lg:text-xs font-bold leading-relaxed text-white font-serif">
+              "The curriculum at YEDC transformed my approach to scale. It's the MasterClass of modern business education."
             </p>
+
+            {/* Author */}
+            <div className="pt-0.5">
+              <span className="text-[11px] font-bold text-white block">Sarah Jenkins</span>
+              <span className="text-[10px] text-slate-300 font-medium block">Founder, TechVision Inc.</span>
+            </div>
+
           </div>
         </div>
+
       </div>
     </main>
   );

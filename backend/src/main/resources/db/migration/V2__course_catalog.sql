@@ -74,17 +74,17 @@ INSERT INTO section (course_id, title, display_order) VALUES
 
 -- Seed Lessons for Course 1, Section 1 (Ideation)
 INSERT INTO lesson (section_id, title, video_url, pdf_url, duration, preview_enabled, display_order) VALUES
-(1, 'Introduction to the Lean Canvas', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 600, TRUE, 1),
-(1, 'Conducting Effective Customer Interviews', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', NULL, 900, FALSE, 2);
+(1, 'Introduction to the Lean Canvas', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 600, TRUE, 1),
+(1, 'Conducting Effective Customer Interviews', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', NULL, 900, FALSE, 2);
 
 -- Seed Lessons for Course 1, Section 2 (MVP)
 INSERT INTO lesson (section_id, title, video_url, pdf_url, duration, preview_enabled, display_order) VALUES
-(2, 'Defining Your Core Value Proposition', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 720, TRUE, 1),
-(2, 'No-Code Tools for Rapid Prototyping', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', NULL, 1200, FALSE, 2);
+(2, 'Defining Your Core Value Proposition', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 720, TRUE, 1),
+(2, 'No-Code Tools for Rapid Prototyping', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', NULL, 1200, FALSE, 2);
 
 -- Seed Lessons for Course 1, Section 3 (Fundraising)
 INSERT INTO lesson (section_id, title, video_url, pdf_url, duration, preview_enabled, display_order) VALUES
-(3, 'Structuring the Startup Pitch Deck', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 1050, FALSE, 1);
+(3, 'Structuring the Startup Pitch Deck', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 1050, FALSE, 1);
 
 -- Seed Sections for Course 2 (Digital Marketing Mastery)
 INSERT INTO section (course_id, title, display_order) VALUES
@@ -93,5 +93,5 @@ INSERT INTO section (course_id, title, display_order) VALUES
 
 -- Seed Lessons for Course 2, Section 1 (Funnel Setup)
 INSERT INTO lesson (section_id, title, video_url, pdf_url, duration, preview_enabled, display_order) VALUES
-(4, 'Mapping the Customer Acquisition Funnel', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 800, TRUE, 1),
-(4, 'Google Analytics & Tag Manager Setup', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', NULL, 1100, FALSE, 2);
+(4, 'Mapping the Customer Acquisition Funnel', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf', 800, TRUE, 1),
+(4, 'Google Analytics & Tag Manager Setup', 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', NULL, 1100, FALSE, 2);

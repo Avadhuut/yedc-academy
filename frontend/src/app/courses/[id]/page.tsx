@@ -1,10 +1,35 @@
-'use client';
-import API_BASE_URL from '@/config/api';
-
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+"use client";
+import API_BASE_URL from "@/config/api";
+import React, { useEffect, useState } from "react";
+import { getBlueprintDetails } from "@/utils/blueprint";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import {
+  Clock,
+  Shield,
+  Star,
+  Users,
+  CheckCircle,
+  Lock,
+  Play,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  AlertTriangle,
+  Award,
+  Coins,
+  Percent,
+  Calendar,
+  Layers,
+  FileText,
+  FileSpreadsheet,
+  MapPin,
+  HelpCircle,
+} from "lucide-react";
 
 interface Lesson {
   id: number;
@@ -50,31 +75,242 @@ interface ReviewData {
   createdAt: string;
 }
 
+// getBlueprintDetails helper is imported from "@/utils/blueprint"
+
+const DEFAULT_COURSES_MAP: Record<number, CourseDetails> = {
+  1: {
+    id: 1,
+    title: "Café Startup & Operations Masterclass",
+    subtitle: "Master commercial espresso bars, menu planning, equipment sizing, and layout configuration.",
+    description: "Learn how to launch and scale a profitable cafe business in India. This program covers commercial espresso machine selection, raw bean procurement, pricing formulas, interior layout planning, staff SOPs, and marketing strategies.",
+    price: 2999,
+    thumbnail: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "BEGINNER",
+    duration: "6 Weeks",
+    category: { name: "Cafe" },
+    instructor: { name: "Dr. Anirudh Sharma", bio: "15+ years experience in scaling F&B ventures across India.", experience: "15+ Years", profileImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 101,
+        title: "Module 1: Concept Validation & Capital Sizing",
+        displayOrder: 1,
+        lessons: [
+          { id: 1001, title: "Market Sizing & Customer Demographics", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 15, previewEnabled: true, displayOrder: 1 },
+          { id: 1002, title: "Menu Engineering & Cost Per Cup Calculation", videoUrl: null, pdfUrl: null, duration: 20, previewEnabled: false, displayOrder: 2 }
+        ]
+      },
+      {
+        id: 102,
+        title: "Module 2: Machinery Procurement & Vendor Contracting",
+        displayOrder: 2,
+        lessons: [
+          { id: 1003, title: "Selecting Espresso Machines & Grinders", videoUrl: null, pdfUrl: null, duration: 25, previewEnabled: false, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  2: {
+    id: 2,
+    title: "Commercial Bakery & Pastry Venture",
+    subtitle: "Learn commercial deck oven setup, bulk baking ingredient sourcing, and cake packaging.",
+    description: "Step-by-step masterclass to launch an artisanal bakery or commercial pastry kitchen. Covers oven selection, batch costing, recipe scaling, shelf-life extension, packaging design, and distributor partnerships.",
+    price: 3499,
+    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "INTERMEDIATE",
+    duration: "4 Weeks",
+    category: { name: "Bakery" },
+    instructor: { name: "Sneha Iyer", bio: "Founder of The Crumb Factory, scaling commercial bakery brands.", experience: "10+ Years", profileImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 201,
+        title: "Module 1: Commercial Baking Equipment & Kitchen Layout",
+        displayOrder: 1,
+        lessons: [
+          { id: 2001, title: "Selecting Deck Ovens & Spiral Mixers", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 18, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  3: {
+    id: 3,
+    title: "Restaurant & QSR Business Model",
+    subtitle: "Build scalable fast-casual & fine-dine restaurant models with low food-waste SOPs.",
+    description: "Comprehensive training on setting up Quick Service Restaurants (QSR) or casual dining venues. Learn inventory management, POS integrations, staff recruitment, FSSAI compliance, and food cost control.",
+    price: 3999,
+    thumbnail: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "ADVANCED",
+    duration: "8 Weeks",
+    category: { name: "Restaurant" },
+    instructor: { name: "Dr. Anirudh Sharma", bio: "F&B Strategist & Restaurant Advisor.", experience: "15+ Years", profileImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 301,
+        title: "Module 1: Kitchen Operations & Food Waste Reduction",
+        displayOrder: 1,
+        lessons: [
+          { id: 3001, title: "Standard Operating Procedures for Kitchen Staff", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 22, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  4: {
+    id: 4,
+    title: "Packaged Snacks & Namkeen Business",
+    subtitle: "Setup commercial frying, roasting, nitrogen pouch packaging, and distributor channels.",
+    description: "Everything you need to launch a packaged snacks brand. Learn batch recipe formulation, nitrogen flush packaging machinery, distributor margin structuring, and retail placement.",
+    price: 2499,
+    thumbnail: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "BEGINNER",
+    duration: "3 Weeks",
+    category: { name: "Snacks Business" },
+    instructor: { name: "Priya Nair", bio: "Growth marketing & FMCG retail specialist.", experience: "12+ Years", profileImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 401,
+        title: "Module 1: Packaging Machinery & Distributor Setup",
+        displayOrder: 1,
+        lessons: [
+          { id: 4001, title: "Selecting Nitrogen Pouch Packaging Machines", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 16, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  5: {
+    id: 5,
+    title: "Cloud Kitchen & Delivery Brand Scale",
+    subtitle: "Low-overhead multi-brand delivery kitchen setup, Zomato/Swiggy algorithm optimization.",
+    description: "Launch a delivery-only cloud kitchen brand with low capital overhead. Master aggregator algorithm rankings, packaging heat retention, dark kitchen space optimization, and virtual brand creation.",
+    price: 2799,
+    thumbnail: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "INTERMEDIATE",
+    duration: "3 Weeks",
+    category: { name: "Cloud Kitchen" },
+    instructor: { name: "Priya Nair", bio: "VP Growth Marketing.", experience: "12+ Years", profileImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 501,
+        title: "Module 1: Swiggy & Zomato Ranking Framework",
+        displayOrder: 1,
+        lessons: [
+          { id: 5001, title: "Optimizing Delivery Radius & Ad Bidding", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 20, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  6: {
+    id: 6,
+    title: "Food Processing & Sauce Manufacturing",
+    subtitle: "Commercial recipe scaling, shelf-life stabilization, industrial mixers, and FSSAI licensing.",
+    description: "Scale from small batches to commercial food processing production. Master pH stabilization, thermal pasteurization, industrial mixers, state/central FSSAI licensing, and bulk B2B distribution.",
+    price: 3999,
+    thumbnail: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "ADVANCED",
+    duration: "8 Weeks",
+    category: { name: "Food Processing" },
+    instructor: { name: "Dr. Anirudh Sharma", bio: "Food Processing & Quality Compliance Expert.", experience: "15+ Years", profileImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 601,
+        title: "Module 1: Industrial Machinery & Shelf Life Extension",
+        displayOrder: 1,
+        lessons: [
+          { id: 6001, title: "Pasteurization & Preservative Calculations", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 25, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  7: {
+    id: 7,
+    title: "Dry Fruits Processing & Export Packaging",
+    subtitle: "Sourcing premium nuts, vacuum sealing, gift packaging, and B2B wholesale distribution.",
+    description: "Build a premium dry fruits roasting, grading, and packaging venture. Learn direct farm/importer sourcing, vacuum pouch sealing, festival gift box customization, and wholesale margin structure.",
+    price: 3199,
+    thumbnail: "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "INTERMEDIATE",
+    duration: "4 Weeks",
+    category: { name: "Dry Fruits" },
+    instructor: { name: "Aditya Roy", bio: "Supply chain & trading operator.", experience: "8+ Years", profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 701,
+        title: "Module 1: Sourcing & Vacuum Packaging",
+        displayOrder: 1,
+        lessons: [
+          { id: 7001, title: "Grading Almonds, Cashews & Walnuts", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 15, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  },
+  8: {
+    id: 8,
+    title: "Digital Marketing & Client Acquisition",
+    subtitle: "Customer acquisition funnels, local Google My Business SEO, and high-ticket client retainers.",
+    description: "Launch a digital marketing agency specialized in acquiring retail & food business clients. Covers Meta ad setup, local SEO campaigns, client pitch decks, retainer contracts, and agency scaling.",
+    price: 1999,
+    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80",
+    language: "English / Hindi",
+    level: "BEGINNER",
+    duration: "2 Weeks",
+    category: { name: "Digital Marketing" },
+    instructor: { name: "Priya Nair", bio: "Former VP Growth Marketing.", experience: "12+ Years", profileImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&h=150&q=80" },
+    sections: [
+      {
+        id: 801,
+        title: "Module 1: Meta Ads & Local Client Acquisition",
+        displayOrder: 1,
+        lessons: [
+          { id: 8001, title: "High-Converting Ad Campaigns for Local Businesses", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", pdfUrl: null, duration: 18, previewEnabled: true, displayOrder: 1 }
+        ]
+      }
+    ]
+  }
+};
+
 export default function CourseDetailsPage({ params }: { params: { id: string } }) {
   const { user, token } = useAuth();
   const router = useRouter();
-  const [course, setCourse] = useState<CourseDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [openSections, setOpenSections] = useState<Record<number, boolean>>({});
-  
+
+  const fallbackCourse = DEFAULT_COURSES_MAP[Number(params.id)] || DEFAULT_COURSES_MAP[1];
+  const [course, setCourse] = useState<CourseDetails | null>(fallbackCourse);
+  const [loading, setLoading] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<number, boolean>>(() => {
+    if (fallbackCourse.sections && fallbackCourse.sections.length > 0) {
+      return { [fallbackCourse.sections[0].id]: true };
+    }
+    return {};
+  });
+
   // Preview video modal state
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
 
   // Checkout modal states
   const [showCheckout, setShowCheckout] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'CARD'>('UPI');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
-  const [checkoutError, setCheckoutError] = useState('');
-  const [transactionId, setTransactionId] = useState('');
+  const [checkoutError, setCheckoutError] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+
+  // Interactive Mock Payment Gateway Modal States
+  const [showMockModal, setShowMockModal] = useState(false);
+  const [mockPaymentMethod, setMockPaymentMethod] = useState("UPI");
+  const [currentOrderData, setCurrentOrderData] = useState<{ orderId: string; amount: number } | null>(null);
+  const [mockVerifying, setMockVerifying] = useState(false);
+  const [mockModalError, setMockModalError] = useState("");
 
   // Review states
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [myRating, setMyRating] = useState(0);
-  const [myComment, setMyComment] = useState('');
+  const [myComment, setMyComment] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [reviewError, setReviewError] = useState('');
+  const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
   useEffect(() => {
@@ -83,88 +319,98 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    fetch(`${API_BASE_URL}/courses/${params.id}`, { headers })
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1200);
+
+    fetch(`${API_BASE_URL}/courses/${params.id}`, { headers, signal: controller.signal })
       .then((res) => res.json())
       .then((result) => {
-        if (result.status === 'SUCCESS' && result.data) {
+        if (result.status === "SUCCESS" && result.data) {
           setCourse(result.data);
-          // Open first section by default
           if (result.data.sections && result.data.sections.length > 0) {
             setOpenSections({ [result.data.sections[0].id]: true });
           }
         }
       })
-      .catch((err) => console.error('Failed to load course details', err))
-      .finally(() => setLoading(false));
+      .catch(() => {})
+      .finally(() => clearTimeout(timeoutId));
   }, [params.id, token]);
 
-  // Load reviews separately (public)
   useEffect(() => {
     fetch(`${API_BASE_URL}/courses/${params.id}/reviews`)
       .then((res) => res.json())
       .then((result) => {
-        if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
+        if (result.status === "SUCCESS" && Array.isArray(result.data)) {
           setReviews(result.data);
-          // Pre-fill my review if already submitted
           if (user) {
             const mine = result.data.find((r: ReviewData) => r.studentName === user.fullName);
-            if (mine) { setMyRating(mine.rating); setMyComment(mine.comment || ''); setReviewSuccess(true); }
+            if (mine) {
+              setMyRating(mine.rating);
+              setMyComment(mine.comment || "");
+              setReviewSuccess(true);
+            }
           }
         }
       })
       .catch(() => {});
   }, [params.id, user]);
 
-  // Load Razorpay Script dynamically
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  const toggleSection = (sectionId: number) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
 
   const handleEnrollSubmit = async () => {
     setCheckoutLoading(true);
-    setCheckoutError('');
+    setCheckoutError("");
+    setCheckoutSuccess(false);
 
     try {
       // 1. Create order on the backend
       const orderRes = await fetch(`${API_BASE_URL}/payments/order`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ courseId: course?.id })
       });
       const orderResult = await orderRes.json();
 
-      if (orderResult.status !== 'SUCCESS' || !orderResult.data) {
-        throw new Error(orderResult.message || 'Failed to create payment order.');
+      if (orderResult.status !== "SUCCESS" || !orderResult.data) {
+        throw new Error(orderResult.message || "Failed to create payment order.");
       }
 
       const { orderId, amount, currency, keyId, mockMode } = orderResult.data;
 
-      // 2. Configure Razorpay checkout options
+      // 2. Open interactive Mock Payment Gateway Modal if in mock mode or Razorpay is missing
+      if (mockMode || keyId === "rzp_test_mockKeyId" || !(window as any).Razorpay) {
+        setCurrentOrderData({ orderId, amount: amount / 100 });
+        setMockModalError("");
+        setShowMockModal(true);
+        setCheckoutLoading(false);
+        return;
+      }
+
+      // 3. Configure Razorpay options for live gateway
       const options = {
         key: keyId,
         amount: amount,
         currency: currency,
-        name: 'YEDC Academy',
+        name: "YEDC Academy",
         description: `Enrollment for ${course?.title}`,
-        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=60&h=60',
+        image: "/logo.png",
         order_id: orderId,
         handler: async function (response: any) {
           setCheckoutLoading(true);
           try {
             const verifyRes = await fetch(`${API_BASE_URL}/payments/verify`, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
               },
               body: JSON.stringify({
                 razorpayOrderId: response.razorpay_order_id,
@@ -174,26 +420,25 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
             });
             const verifyResult = await verifyRes.json();
 
-            if (verifyResult.status === 'SUCCESS') {
+            if (verifyResult.status === "SUCCESS") {
               setCheckoutSuccess(true);
               setTransactionId(response.razorpay_payment_id);
               setCourse((prev) => prev ? { ...prev, enrolled: true } : null);
             } else {
-              setCheckoutError(verifyResult.message || 'Payment signature verification failed.');
+              setCheckoutError(verifyResult.message || "Payment signature verification failed.");
             }
           } catch (err) {
-            setCheckoutError('Connection to payment verification server failed.');
+            setCheckoutError("Connection to payment verification server failed.");
           } finally {
             setCheckoutLoading(false);
           }
         },
         prefill: {
-          name: user?.fullName || '',
-          email: user?.email || '',
-          contact: user?.phone || ''
+          name: user?.fullName || "",
+          email: user?.email || ""
         },
         theme: {
-          color: '#4f46e5'
+          color: "#855B00"
         },
         modal: {
           ondismiss: function () {
@@ -202,176 +447,223 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
         }
       };
 
-      // 3. Direct bypass for local mock key setups
-      if (mockMode && (keyId === 'rzp_test_mockKeyId' || !(window as any).Razorpay)) {
-        console.log('Mock Mode Direct Verification Bypass Active');
-        const verifyRes = await fetch(`${API_BASE_URL}/payments/verify`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            razorpayOrderId: orderId,
-            razorpayPaymentId: 'pay_mock_' + Math.random().toString(36).substring(2, 15).toUpperCase(),
-            razorpaySignature: 'mock_signature'
-          })
-        });
-        const verifyResult = await verifyRes.json();
-
-        if (verifyResult.status === 'SUCCESS') {
-          setCheckoutSuccess(true);
-          setTransactionId('pay_mock_direct');
-          setCourse((prev) => prev ? { ...prev, enrolled: true } : null);
-        } else {
-          setCheckoutError(verifyResult.message || 'Mock verification bypass failed.');
-        }
-        setCheckoutLoading(false);
-        return;
-      }
-
-      // Check if Razorpay SDK is loaded
-      if (!(window as any).Razorpay) {
-        throw new Error('Payment gateway failed to initialize. Please check your internet connection.');
-      }
-
       const rzp = new (window as any).Razorpay(options);
       rzp.open();
 
     } catch (err: any) {
-      setCheckoutError(err.message || 'An error occurred during checkout.');
+      setCheckoutError(err.message || "An error occurred during checkout.");
       setCheckoutLoading(false);
+    }
+  };
+
+  const handleCompleteMockPayment = async () => {
+    if (!currentOrderData) return;
+    setMockVerifying(true);
+    setMockModalError("");
+
+    try {
+      const mockPaymentId = "pay_mock_" + Math.random().toString(36).substring(2, 15).toUpperCase();
+      const verifyRes = await fetch(`${API_BASE_URL}/payments/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          razorpayOrderId: currentOrderData.orderId,
+          razorpayPaymentId: mockPaymentId,
+          razorpaySignature: "mock_signature"
+        })
+      });
+      const verifyResult = await verifyRes.json();
+
+      if (verifyResult.status === "SUCCESS") {
+        setCheckoutSuccess(true);
+        setTransactionId(mockPaymentId);
+        setCourse((prev) => prev ? { ...prev, enrolled: true } : null);
+        setShowMockModal(false);
+      } else {
+        setMockModalError(verifyResult.message || "Mock payment verification failed.");
+      }
+    } catch (err) {
+      setMockModalError("Failed to connect to verification server.");
+    } finally {
+      setMockVerifying(false);
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (myRating === 0) {
+      setReviewError("Please choose a rating score.");
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewError("");
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ rating: myRating, comment: myComment })
+      });
+      const result = await res.json();
+      if (result.status === "SUCCESS") {
+        setReviewSuccess(true);
+        // Add locally
+        const newReview: ReviewData = {
+          id: Date.now(),
+          accountId: user?.id || 0,
+          studentName: user?.fullName || "You",
+          rating: myRating,
+          comment: myComment,
+          createdAt: new Date().toISOString()
+        };
+        setReviews((prev) => [newReview, ...prev.filter((r) => r.studentName !== user?.fullName)]);
+      } else {
+        setReviewError(result.message || "Failed to submit review.");
+      }
+    } catch (err) {
+      setReviewError("Connection failure while submitting review.");
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-      </div>
+      <main className="min-h-screen bg-background flex flex-col font-sans pt-24">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin" />
+        </div>
+        <Footer />
+      </main>
     );
   }
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center text-center px-4">
-        <h2 className="text-2xl font-bold text-white mb-2">Course not found</h2>
-        <p className="text-sm text-neutral-500 mb-6">The course you are looking for does not exist or has been archived.</p>
-        <Link href="/courses" className="px-6 py-3 bg-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-500 transition-all">
-          Back to Catalog
-        </Link>
-      </div>
+      <main className="min-h-screen bg-background flex flex-col font-sans pt-24">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+          <AlertTriangle className="w-12 h-12 text-gold animate-bounce" />
+          <h2 className="text-xl font-bold text-[#0F172A] font-heading">Blueprint Not Found</h2>
+          <Link href="/courses">
+            <PrimaryButton>Back to Catalog</PrimaryButton>
+          </Link>
+        </div>
+        <Footer />
+      </main>
     );
   }
 
-  const toggleSection = (sectionId: number) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId],
-    }));
-  };
-
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    return `${mins}m`;
-  };
+  const bp = getBlueprintDetails(course.title);
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-neutral-200 relative overflow-hidden flex flex-col">
-      {/* Background blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Global Header */}
-      <header className="z-10 bg-neutral-950/60 backdrop-blur-md border-b border-neutral-900/60 px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
-          <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
-          YEDC Academy
-        </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/courses" className="hover:text-white transition-colors">Explore Courses</Link>
-          <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
-          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-          {user && user.role === 'ADMIN' && (
-            <Link href="/admin/courses" className="text-indigo-400 hover:text-indigo-350 transition-colors font-semibold">Admin Panel</Link>
-          )}
-        </nav>
-        <div className="flex items-center gap-4">
-          {user ? (
-            <Link href="/profile" className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/10">
-              Dashboard ({user.fullName.split(' ')[0]})
-            </Link>
-          ) : (
-            <Link href="/login" className="px-4 py-2 rounded-lg text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-all">
-              Sign In
-            </Link>
-          )}
-        </div>
-      </header>
+    <main className="min-h-screen bg-background text-[#0F172A] flex flex-col font-sans pt-16">
+      <Navbar />
 
       {/* Course Hero Banner */}
-      <section className="z-10 bg-neutral-950/40 border-b border-neutral-900/80 py-12 px-6">
-        <div className="max-w-5xl w-full mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-          <div className="md:col-span-2 space-y-4">
-            <span className="inline-flex items-center py-1 px-2.5 rounded text-[10px] font-bold bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
-              {course.category.name}
+      <section className="relative bg-white border-b border-[#E5E7EB] pt-6 pb-8 md:pt-8 md:pb-10 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-radial-gold-ambient pointer-events-none" />
+        <div className="max-w-screen-xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+          
+          <div className="lg:col-span-8 space-y-5 text-left">
+            {course.enrolled && (
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-[18px] p-3.5 px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold shadow-xs animate-fade-in-up">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span>🎉 You own this business program! You have full lifetime access.</span>
+                </div>
+                <Link href={`/courses/${course.id}/learn`} className="shrink-0 w-full sm:w-auto">
+                  <PrimaryButton className="h-9 px-4 text-xs font-black w-full">Start Learning Blueprint ▶</PrimaryButton>
+                </Link>
+              </div>
+            )}
+
+            <span className="inline-flex items-center py-1.5 px-3.5 rounded-full text-[10px] font-extrabold bg-gold/10 text-gold border border-gold/20 uppercase tracking-widest font-heading">
+              {course.category.name.replace("Course", "Business")}
             </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight">
-              {course.title}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#0F172A] leading-tight font-heading">
+              {bp.blueprintTitle}
             </h1>
-            <p className="text-sm sm:text-base text-neutral-400 font-medium">
+            <p className="text-base text-slate-600 font-semibold max-w-xl">
               {course.subtitle}
             </p>
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-neutral-500 font-semibold pt-2">
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                {course.duration} Duration
-              </span>
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                {course.level} Level
-              </span>
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 11.37 7.31 16.5 3 18" /></svg>
-                {course.language} Audio
-              </span>
-              {(course.reviewCount ?? 0) > 0 && (
-                <span className="flex items-center gap-1 text-yellow-400">
-                  {'★'.repeat(Math.round(course.averageRating ?? 0))}{'☆'.repeat(5 - Math.round(course.averageRating ?? 0))}
-                  <span className="text-neutral-400 text-[10px] font-bold ml-0.5">
-                    {(course.averageRating ?? 0).toFixed(1)} ({course.reviewCount} reviews)
-                  </span>
-                </span>
-              )}
+
+            {/* Metrics quick view */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs font-semibold text-[#334155]">
+              <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-[16px] hover:border-gold/30 hover:bg-white hover:shadow-premium-hover hover:-translate-y-0.5 transition-premium">
+                <Coins className="w-5 h-5 text-gold shrink-0" />
+                <div>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Capital</p>
+                  <p className="font-bold text-[#0F172A]">{bp.investment}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-[16px] hover:border-gold/30 hover:bg-white hover:shadow-premium-hover hover:-translate-y-0.5 transition-premium">
+                <Percent className="w-5 h-5 text-gold shrink-0" />
+                <div>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Profit Margin</p>
+                  <p className="font-bold text-[#0F172A]">{bp.margin}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-[16px] hover:border-gold/30 hover:bg-white hover:shadow-premium-hover hover:-translate-y-0.5 transition-premium">
+                <Calendar className="w-5 h-5 text-gold shrink-0" />
+                <div>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Launch Time</p>
+                  <p className="font-bold text-[#0F172A]">{bp.launchTime}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-100 rounded-[16px] hover:border-gold/30 hover:bg-white hover:shadow-premium-hover hover:-translate-y-0.5 transition-premium">
+                <Clock className="w-5 h-5 text-gold shrink-0" />
+                <div>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Duration</p>
+                  <p className="font-bold text-[#0F172A]">{course.duration}</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="md:col-span-1 bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-xl shadow-black/40 text-center flex flex-col items-center">
-            <div className="w-full aspect-video rounded-xl bg-neutral-950 overflow-hidden mb-5">
+
+          {/* Sticky pricing card */}
+          <div className="lg:col-span-4 bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm hover:shadow-premium-hover hover:border-gold/25 transition-premium flex flex-col items-center">
+            <div className="w-full aspect-video rounded-[24px] bg-slate-100 overflow-hidden mb-4 border border-slate-200 relative">
               <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
             </div>
-            <div className="text-3xl font-extrabold text-white mb-2">₹{course.price}</div>
-            <p className="text-xs text-neutral-500 mb-5 font-semibold">One-time payment • Lifetime access</p>
+
+            {/* Error or Success Notice Banners */}
+            {checkoutSuccess && (
+              <div className="w-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs p-3.5 rounded-[16px] mb-4 font-bold text-center animate-fade-in-up">
+                🎉 Enrollment Successful! You now have full access to this blueprint.
+              </div>
+            )}
+
+            {checkoutError && (
+              <div className="w-full bg-red-50 border border-red-200 text-red-700 text-xs p-3.5 rounded-[16px] mb-4 font-bold text-center flex items-center justify-between gap-2 animate-fade-in-up">
+                <span className="flex-1 text-left">{checkoutError}</span>
+                <button onClick={() => setCheckoutError("")} className="text-red-400 hover:text-red-600 font-black cursor-pointer">✕</button>
+              </div>
+            )}
+            <div className="text-3xl font-extrabold text-[#0F172A] mb-1">
+              {course.enrolled ? "Unlocked" : `₹${course.price}`}
+            </div>
+            <p className="text-xs text-slate-500 mb-5 font-semibold">
+              {course.enrolled ? "Lifetime Access Active" : "One-time payment • Lifetime access"}
+            </p>
             {course.enrolled ? (
-              <Link
-                href={`/courses/${course.id}/learn`}
-                className="w-full py-3 bg-green-600 hover:bg-green-500 text-white text-sm font-semibold rounded-lg shadow-lg shadow-green-600/25 border border-green-500/30 transition-all block text-center cursor-pointer font-sans"
-              >
-                Go to Course
+              <Link href={`/courses/${course.id}/learn`} className="w-full">
+                <PrimaryButton className="w-full font-black shadow-md">Start Learning Blueprint ▶</PrimaryButton>
               </Link>
             ) : user ? (
-              <button
-                onClick={() => setShowCheckout(true)}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow-lg shadow-indigo-600/25 border border-indigo-500/30 transition-all cursor-pointer font-sans"
-              >
+              <PrimaryButton onClick={handleEnrollSubmit} loading={checkoutLoading} className="w-full">
                 Enroll Now
-              </button>
+              </PrimaryButton>
             ) : (
-              <Link
-                href={`/login?redirect=/courses/${course.id}`}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow-lg shadow-indigo-600/25 border border-indigo-500/30 transition-all block text-center font-sans"
-              >
-                Enroll Now
+              <Link href={`/login?redirect=/courses/${course.id}`} className="w-full">
+                <PrimaryButton className="w-full">Enroll Now</PrimaryButton>
               </Link>
             )}
           </div>
@@ -379,283 +671,364 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
       </section>
 
       {/* Details Sections */}
-      <section className="z-10 max-w-5xl w-full mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="max-w-screen-xl w-full mx-auto px-6 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 flex-1">
+        
         {/* Core Info & Syllabus (left) */}
-        <div className="md:col-span-2 space-y-10">
-          {/* About */}
-          <div>
-            <h2 className="text-xl font-bold text-white mb-4">About this Course</h2>
-            <p className="text-sm text-neutral-400 leading-relaxed font-medium">
+        <div className="lg:col-span-8 space-y-[80px]">
+          
+          {/* Business Overview parameters */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-black text-[#0F172A] font-heading">Business Program Overview</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-5 border border-slate-100 bg-white rounded-[24px] shadow-sm space-y-2">
+                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">Required Equipment</h4>
+                <ul className="text-xs text-slate-500 font-semibold space-y-1.5 list-disc pl-4">
+                  {bp.equipment.map((eq, idx) => (
+                    <li key={idx}>{eq}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="p-5 border border-slate-100 bg-white rounded-[24px] shadow-sm space-y-2">
+                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">Required Licenses</h4>
+                <ul className="text-xs text-slate-500 font-semibold space-y-1.5 list-disc pl-4">
+                  {bp.licenses.map((lic, idx) => (
+                    <li key={idx}>{lic}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-5 border border-slate-100 bg-white rounded-[24px] shadow-sm">
+              <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider mb-2">Vendor & Supply Chain Support</h4>
+              <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+                {bp.support} Every entrepreneur gains access to our pre-vetted contractor lists for fabrication, packaging, and raw ingredients.
+              </p>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-black text-[#0F172A] font-heading">Program Details</h2>
+            <p className="text-sm text-slate-600 leading-relaxed font-semibold">
               {course.description}
             </p>
           </div>
 
-          {/* Curriculum */}
-          <div>
-            <h2 className="text-xl font-bold text-white mb-4">Course Curriculum</h2>
-            <p className="text-xs text-neutral-500 mb-6">Explore the sections and preview available lessons</p>
+          {/* Course Curriculum (Sections & Lessons) */}
+          {course.sections && course.sections.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-4">
+                <div>
+                  <h2 className="text-xl font-black text-[#0F172A] font-heading">Course Curriculum & Modules</h2>
+                  <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                    {course.sections.length} {course.sections.length === 1 ? "Module" : "Modules"} • {course.sections.reduce((acc, sec) => acc + (sec.lessons?.length || 0), 0)} Lessons
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const allOpen = course.sections.every(sec => openSections[sec.id]);
+                    const nextState: Record<number, boolean> = {};
+                    course.sections.forEach(sec => {
+                      nextState[sec.id] = !allOpen;
+                    });
+                    setOpenSections(nextState);
+                  }}
+                  className="text-xs font-bold text-gold hover:text-gold-light transition-colors flex items-center gap-1 self-start sm:self-auto cursor-pointer"
+                >
+                  {course.sections.every(sec => openSections[sec.id]) ? "Collapse All Modules" : "Expand All Modules"}
+                </button>
+              </div>
 
-            <div className="space-y-3">
-              {course.sections.map((section) => (
-                <div key={section.id} className="border border-neutral-800 rounded-xl overflow-hidden bg-neutral-950/20">
-                  <button
-                    onClick={() => toggleSection(section.id)}
-                    className="w-full px-5 py-4 flex justify-between items-center bg-neutral-900/40 hover:bg-neutral-900/60 transition-colors text-left"
-                  >
-                    <div>
-                      <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-0.5">
-                        Section {section.displayOrder}
-                      </span>
-                      <h4 className="text-sm font-bold text-white">{section.title}</h4>
-                    </div>
-                    <svg
-                      className={`w-5 h-5 text-neutral-500 transform transition-transform ${openSections[section.id] ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              <div className="space-y-4">
+                {course.sections.map((section, secIdx) => {
+                  const isOpen = !!openSections[section.id];
+                  return (
+                    <div
+                      key={section.id}
+                      className="bg-white border border-[#E5E7EB] rounded-[24px] overflow-hidden shadow-sm transition-all duration-200"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {openSections[section.id] && (
-                    <div className="border-t border-neutral-900/60 divide-y divide-neutral-900/60 bg-neutral-950/50">
-                      {section.lessons.map((lesson) => (
-                        <div key={lesson.id} className="px-5 py-3.5 flex justify-between items-center text-xs">
-                          <div className="flex items-center gap-3">
-                            {lesson.previewEnabled ? (
-                              <button
-                                onClick={() => setPreviewVideoUrl(lesson.videoUrl)}
-                                className="w-6 h-6 rounded-full bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 flex items-center justify-center cursor-pointer transition-colors"
-                              >
-                                <svg className="w-3 h-3 fill-indigo-400 pl-0.5" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
-                                </svg>
-                              </button>
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-neutral-900 text-neutral-600 flex items-center justify-center">
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                              </div>
-                            )}
-                            <div>
-                              <p className="font-semibold text-neutral-200">{lesson.title}</p>
-                              <span className="text-[10px] text-neutral-500 font-medium">Duration: {formatDuration(lesson.duration)}</span>
-                            </div>
+                      {/* Section Header Accordion */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenSections((prev) => ({
+                            ...prev,
+                            [section.id]: !prev[section.id],
+                          }))
+                        }
+                        className="w-full p-5 flex items-center justify-between bg-slate-50/70 hover:bg-slate-50 text-left transition-colors cursor-pointer border-b border-slate-100"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="w-8 h-8 rounded-full bg-gold/10 border border-gold/20 text-gold flex items-center justify-center text-xs font-black shrink-0 font-heading">
+                            {secIdx + 1}
+                          </span>
+                          <div>
+                            <h3 className="text-sm font-bold text-[#0F172A] font-heading">
+                              {section.title}
+                            </h3>
+                            <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
+                              {section.lessons?.length || 0} {(section.lessons?.length || 0) === 1 ? "Lesson" : "Lessons"}
+                            </p>
                           </div>
-                          {lesson.previewEnabled && (
-                            <button
-                              onClick={() => setPreviewVideoUrl(lesson.videoUrl)}
-                              className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-wider transition-colors cursor-pointer"
-                            >
-                              Watch Preview
-                            </button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isOpen ? (
+                            <ChevronUp className="w-5 h-5 text-slate-400" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5 text-slate-400" />
                           )}
                         </div>
-                      ))}
+                      </button>
+
+                      {/* Section Lessons List */}
+                      {isOpen && section.lessons && (
+                        <div className="divide-y divide-slate-100">
+                          {section.lessons.map((lesson, lesIdx) => (
+                            <div
+                              key={lesson.id}
+                              className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors gap-4"
+                            >
+                              <div className="flex items-center gap-3.5 min-w-0">
+                                {lesson.previewEnabled ? (
+                                  <Play className="w-4 h-4 text-gold shrink-0" />
+                                ) : course.enrolled ? (
+                                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                                ) : (
+                                  <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                                )}
+                                <div className="min-w-0">
+                                  <h4 className="text-xs font-bold text-[#0F172A] truncate">
+                                    {lesIdx + 1}. {lesson.title}
+                                  </h4>
+                                  <div className="flex items-center gap-3 text-[10px] text-slate-400 font-semibold mt-1">
+                                    {lesson.duration > 0 && (
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3 text-gold" /> {lesson.duration} mins
+                                      </span>
+                                    )}
+                                    {lesson.pdfUrl && (
+                                      <span className="flex items-center gap-1 text-slate-500">
+                                        <FileText className="w-3 h-3 text-gold" /> PDF Included
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Lesson Action (Preview or Learn) */}
+                              <div className="shrink-0">
+                                {lesson.previewEnabled && lesson.videoUrl ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setPreviewVideoUrl(lesson.videoUrl)}
+                                    className="py-1.5 px-3.5 rounded-full text-[10px] font-black bg-gold/10 text-gold hover:bg-gold hover:text-white border border-gold/20 transition-all flex items-center gap-1 cursor-pointer font-heading"
+                                  >
+                                    <Play className="w-3 h-3 fill-current" /> Preview Video
+                                  </button>
+                                ) : course.enrolled ? (
+                                  <Link
+                                    href={`/courses/${course.id}/learn`}
+                                    className="py-1.5 px-3.5 rounded-full text-[10px] font-black bg-slate-100 text-[#0F172A] hover:bg-slate-200 transition-colors block font-heading"
+                                  >
+                                    Watch Lesson
+                                  </Link>
+                                ) : (
+                                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 font-heading">
+                                    <Lock className="w-3 h-3" /> Locked
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+
+
+          {/* Success Story block */}
+          <div className="bg-slate-50 border border-[#E5E7EB] p-8 rounded-[24px] space-y-6">
+            <h3 className="text-base font-black text-[#0F172A] font-heading uppercase tracking-wide">Featured YEDC Success Case</h3>
+            <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider">
+              <span className="px-3 py-1 rounded-[16px] bg-red-100 text-red-700 border border-red-200">
+                Before: {bp.story.before}
+              </span>
+              <span className="text-slate-400">→</span>
+              <span className="px-3 py-1 rounded-[16px] bg-green-100 text-green-700 border border-green-200">
+                After: {bp.story.after}
+              </span>
+            </div>
+            <p className="text-xs italic text-slate-600 leading-relaxed font-semibold">
+              "{bp.story.text}"
+            </p>
+            <div className="flex justify-between items-center border-t border-slate-200/60 pt-4 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full relative overflow-hidden bg-slate-200 border border-slate-300 shrink-0">
+                  <img src={bp.story.image} alt={bp.story.name} className="w-full h-full object-cover" />
                 </div>
-              ))}
+                <div>
+                  <h4 className="text-xs font-black text-[#0F172A]">{bp.story.name}</h4>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">{bp.story.business}</p>
+                  <p className="text-[9px] text-slate-400 font-semibold flex items-center gap-0.5 mt-0.5"><MapPin className="w-2.5 h-2.5" /> {bp.story.location}</p>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Monthly Revenue</span>
+                <span className="text-xs font-black text-green-600 block">{bp.story.revenue}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Certificate Mockup */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 space-y-4">
+            <h3 className="text-base font-black text-[#0F172A] font-heading">Earn Your Completion Certificate</h3>
+            <p className="text-xs text-slate-500 font-semibold">
+              Pass the module audits to claim your landscape certificate. This serves as a credential for partners & vendors.
+            </p>
+            <div className="aspect-[16/10] max-w-lg mx-auto bg-slate-100 rounded-[24px] overflow-hidden border border-slate-200 relative p-2 shadow-inner">
+              <img 
+                src="/certificate_mockup.png" 
+                alt="Completion Certificate Mockup" 
+                className="w-full h-full object-cover rounded-[16px] shadow-md border border-slate-200/80" 
+              />
+            </div>
+          </div>
+
+          {/* Reviews section */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-black text-[#0F172A] font-heading">Entrepreneur Reviews</h2>
+
+            {/* Leave a review form (Enrolled only) */}
+            {course.enrolled && (
+              <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 space-y-4">
+                <h3 className="text-sm font-bold text-[#0F172A] font-heading">Share Your Feedback</h3>
+                {reviewSuccess && (
+                  <div className="bg-green-50 border border-green-200 text-green-700 text-xs py-2 px-3 rounded-[16px] font-bold">
+                    Feedback saved successfully!
+                  </div>
+                )}
+                {reviewError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 text-xs py-2 px-3 rounded-[16px] font-bold">
+                    {reviewError}
+                  </div>
+                )}
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider mr-2">Your Rating:</span>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => { setMyRating(star); setReviewSuccess(false); }}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        className="text-lg focus:outline-none transition-colors"
+                      >
+                        <span className={(hoverRating || myRating) >= star ? "text-gold" : "text-slate-200"}>★</span>
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    rows={3}
+                    required
+                    value={myComment}
+                    onChange={(e) => { setMyComment(e.target.value); setReviewSuccess(false); }}
+                    placeholder="Describe your launch experience and training quality..."
+                    className="w-full p-4 rounded-[16px] bg-slate-50 border border-slate-200 hover:border-gold/30 focus:border-gold text-[#0F172A] placeholder-slate-400 text-xs focus:outline-none transition-all duration-200 resize-none font-medium"
+                  />
+                  <PrimaryButton type="submit" loading={reviewSubmitting} className="h-10 text-xs px-5">
+                    Submit Review
+                  </PrimaryButton>
+                </form>
+              </div>
+            )}
+
+            {/* List reviews */}
+            <div className="space-y-4">
+              {reviews.length > 0 ? (
+                reviews.map((rev) => (
+                  <div key={rev.id} className="bg-white border border-slate-100 rounded-[24px] p-6 shadow-sm space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h4 className="text-xs font-black text-[#0F172A]">{rev.studentName}</h4>
+                        <span className="text-[9px] text-slate-400 font-bold uppercase mt-0.5 block">Verified Graduate</span>
+                      </div>
+                      <div className="flex gap-0.5 text-xs text-gold">
+                        {"★".repeat(rev.rating) + "☆".repeat(5 - rev.rating)}
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed font-semibold">"{rev.comment}"</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 text-center py-6">No reviews submitted yet for this launch blueprint.</p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Instructor panel (right) */}
-        <div className="md:col-span-1">
-          <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl p-6 shadow-lg shadow-black/10">
-            <h3 className="text-base font-bold text-white mb-4">Your Instructor</h3>
-            <div className="flex items-center gap-4 mb-4">
-              <img
-                src={course.instructor.profileImage}
-                alt={course.instructor.name}
-                className="w-14 h-14 rounded-full object-cover border border-neutral-800"
-              />
+        {/* Sidebar Info (right) */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Mentor Profile details */}
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-[16px] overflow-hidden relative bg-slate-200 border border-slate-300">
+                <img src={course.instructor.profileImage} alt={course.instructor.name} className="w-full h-full object-cover" />
+              </div>
               <div>
-                <h4 className="font-bold text-white text-sm">{course.instructor.name}</h4>
-                <p className="text-[10px] text-neutral-500 font-semibold">{course.instructor.experience}</p>
+                <h4 className="text-xs font-black text-[#0F172A] leading-snug">{course.instructor.name}</h4>
+                <p className="text-[9px] text-gold font-extrabold uppercase tracking-wider mt-0.5">{course.instructor.experience}</p>
               </div>
             </div>
-            <p className="text-xs text-neutral-400 leading-relaxed font-medium">
+            <p className="text-xs text-slate-500 leading-relaxed font-semibold">
               {course.instructor.bio}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Reviews Section */}
-      <section id="reviews" className="z-10 max-w-5xl w-full mx-auto px-6 pb-16">
-        <div className="space-y-6">
-
-          {/* Section header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-extrabold text-white">Student Reviews</h2>
-              <p className="text-xs text-neutral-500 mt-0.5 font-semibold">
-                {reviews.length > 0
-                  ? `${reviews.length} review${reviews.length > 1 ? 's' : ''} · Avg ${
-                      (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-                    } ★`
-                  : 'Be the first to review this course'}
-              </p>
-            </div>
-          </div>
-
-          {/* Write a review — enrolled students only */}
-          {course.enrolled && (
-            <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl p-6 shadow-lg space-y-4">
-              <h3 className="text-sm font-bold text-white">
-                {reviewSuccess ? '✏️ Update Your Review' : '✍️ Write a Review'}
-              </h3>
-
-              {/* Star picker */}
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setMyRating(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="text-2xl transition-transform hover:scale-110 cursor-pointer focus:outline-none"
-                  >
-                    <span className={(hoverRating || myRating) >= star ? 'text-yellow-400' : 'text-neutral-700'}>
-                      ★
-                    </span>
-                  </button>
-                ))}
-                <span className="text-xs text-neutral-500 ml-2 font-semibold">
-                  {myRating > 0 ? ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][myRating] : 'Tap to rate'}
-                </span>
-              </div>
-
-              {/* Comment textarea */}
-              <textarea
-                rows={3}
-                value={myComment}
-                onChange={(e) => setMyComment(e.target.value)}
-                placeholder="Share your experience with this course..."
-                className="w-full px-4 py-3 bg-neutral-950 border border-neutral-800 rounded-lg text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-indigo-500/60 resize-none transition-all"
-              />
-
-              {reviewError && (
-                <p className="text-xs text-red-400 font-semibold">{reviewError}</p>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  disabled={reviewSubmitting || myRating === 0}
-                  onClick={async () => {
-                    if (!token || myRating === 0) return;
-                    setReviewSubmitting(true);
-                    setReviewError('');
-                    try {
-                      const res = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                        body: JSON.stringify({ rating: myRating, comment: myComment }),
-                      });
-                      const result = await res.json();
-                      if (result.status === 'SUCCESS') {
-                        setReviewSuccess(true);
-                        const refreshed = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`);
-                        const refreshedData = await refreshed.json();
-                        if (refreshedData.status === 'SUCCESS') setReviews(refreshedData.data);
-                      } else {
-                        setReviewError(result.message || 'Failed to submit review.');
-                      }
-                    } catch {
-                      setReviewError('Connection error. Please try again.');
-                    } finally {
-                      setReviewSubmitting(false);
-                    }
-                  }}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-indigo-600/20 border border-indigo-500/30 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
-                >
-                  {reviewSubmitting ? (
-                    <div className="w-3 h-3 border border-white/20 border-t-white rounded-full animate-spin" />
-                  ) : reviewSuccess ? 'Update Review' : 'Submit Review'}
-                </button>
-
-                {reviewSuccess && (
-                  <button
-                    onClick={async () => {
-                      if (!token) return;
-                      try {
-                        await fetch(`${API_BASE_URL}/courses/${params.id}/reviews/mine`, {
-                          method: 'DELETE',
-                          headers: { 'Authorization': `Bearer ${token}` },
-                        });
-                        setMyRating(0); setMyComment(''); setReviewSuccess(false);
-                        const refreshed = await fetch(`${API_BASE_URL}/courses/${params.id}/reviews`);
-                        const data = await refreshed.json();
-                        if (data.status === 'SUCCESS') setReviews(data.data);
-                      } catch { /* ignore */ }
-                    }}
-                    className="px-4 py-2.5 border border-red-500/20 text-red-400 hover:bg-red-500/10 text-xs font-bold rounded-lg transition-all cursor-pointer"
-                  >
-                    Delete Review
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Reviews list */}
-          {reviews.length > 0 ? (
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-neutral-900/40 border border-neutral-800/80 rounded-2xl p-5 shadow-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-indigo-600/20 border border-indigo-500/20 flex items-center justify-center text-sm font-extrabold text-indigo-400">
-                        {review.studentName.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">{review.studentName}</p>
-                        <p className="text-[10px] text-neutral-500 font-semibold">
-                          {new Date(review.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-0.5">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <span key={star} className={star <= review.rating ? 'text-yellow-400 text-sm' : 'text-neutral-700 text-sm'}>★</span>
-                      ))}
-                    </div>
-                  </div>
-                  {review.comment && (
-                    <p className="text-sm text-neutral-400 leading-relaxed font-medium">{review.comment}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-neutral-500 font-semibold text-sm">
-              No reviews yet. {course.enrolled ? 'Be the first to share your experience!' : 'Enroll to leave a review.'}
-            </div>
-          )}
-
-        </div>
-      </section>
-
-      {/* Video Modal Overlay */}
+      {/* Preview video modal overlay */}
       {previewVideoUrl && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative">
-            <div className="p-4 border-b border-neutral-800 flex justify-between items-center">
-              <h3 className="font-bold text-white text-sm">Lesson Preview</h3>
-              <button
-                onClick={() => setPreviewVideoUrl(null)}
-                className="text-neutral-500 hover:text-white transition-colors font-bold text-sm"
-              >
-                ✕ Close
-              </button>
-            </div>
-            <div className="aspect-video bg-black">
-              {/* Using standard HTML5 video tag to play preview video */}
+        <div className="fixed inset-0 z-50 bg-[#0F172A]/40 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white border border-slate-200 rounded-[24px] max-w-2xl w-full p-6 shadow-2xl relative">
+            <button
+              onClick={() => setPreviewVideoUrl(null)}
+              className="absolute top-4 right-4 text-xs font-bold text-slate-400 hover:text-[#0F172A] p-2 hover:bg-slate-50 rounded-xl cursor-pointer"
+            >
+              Close ✕
+            </button>
+            <h3 className="text-base font-black text-[#0F172A] mb-4 font-heading">Module Lesson Preview</h3>
+            <div className="aspect-video w-full rounded-[16px] overflow-hidden bg-black border border-slate-200 relative select-none" onContextMenu={(e) => e.preventDefault()}>
+              <div className="absolute top-3 right-3 pointer-events-none z-10 bg-[#0F172A]/70 backdrop-blur-xs text-white/70 text-[10px] font-mono px-2.5 py-1 rounded-md border border-white/10">
+                🔒 Protected • YEDC Academy
+              </div>
               <video
-                src={previewVideoUrl}
+                src={previewVideoUrl || "/videos/sample.mp4"}
                 controls
                 autoPlay
+                playsInline
+                preload="metadata"
+                controlsList="nodownload noremoteplayback"
+                disablePictureInPicture
+                disableRemotePlayback
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+                onError={(e) => {
+                  const videoEl = e.currentTarget;
+                  if (!videoEl.dataset.fallbackTried) {
+                    videoEl.dataset.fallbackTried = "true";
+                    videoEl.src = "/videos/sample.mp4";
+                    videoEl.load();
+                    videoEl.play().catch(() => {});
+                  }
+                }}
                 className="w-full h-full"
               />
             </div>
@@ -663,141 +1036,104 @@ export default function CourseDetailsPage({ params }: { params: { id: string } }
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="bg-neutral-950 border-t border-neutral-900 py-8 px-6 mt-auto">
-        <div className="max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-xs text-neutral-600 font-medium">
-            © 2026 Young Entrepreneur Development Centre. All rights reserved.
-          </p>
-          <div className="flex gap-6 text-xs text-neutral-500 font-semibold">
-            <Link href="/about" className="hover:text-neutral-400 transition-colors">Philosophy</Link>
-            <Link href="/contact" className="hover:text-neutral-400 transition-colors">Support</Link>
-          </div>
-        </div>
-      </footer>
-
-      {/* Checkout Modal Overlay */}
-      {showCheckout && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl relative p-6 space-y-6">
-            {!checkoutSuccess ? (
-              <>
-                <div>
-                  <h3 className="text-xl font-bold text-white mb-1.5 font-sans">Review Checkout</h3>
-                  <p className="text-xs text-neutral-400 font-medium">Unlock lifetime access to this entrepreneurship masterclass.</p>
-                </div>
-
-                <div className="p-4 bg-neutral-950 rounded-xl border border-neutral-900/60 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-bold text-white leading-snug">{course.title}</p>
-                      <p className="text-xs text-neutral-500 mt-1 font-semibold">By {course.instructor.name}</p>
-                    </div>
-                    <span className="text-[10px] font-bold text-indigo-400 uppercase bg-indigo-500/10 border border-indigo-500/20 py-0.5 px-2 rounded">
-                      {course.level}
-                    </span>
-                  </div>
-                  <div className="border-t border-neutral-900 pt-3 flex justify-between items-center text-sm font-bold text-white">
-                    <span>Total Amount</span>
-                    <span>₹{course.price}</span>
-                  </div>
-                </div>
-
-                {checkoutError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-2.5 px-3 rounded-lg font-medium">
-                    {checkoutError}
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  <label className="block text-xs font-bold text-neutral-400 uppercase tracking-wider">Select Mock Payment Method</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setPaymentMethod('UPI')}
-                      className={`p-3.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                        paymentMethod === 'UPI'
-                          ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                          : 'border-neutral-800 bg-neutral-950 text-neutral-400 hover:text-white hover:border-neutral-700'
-                      }`}
-                    >
-                      📱 Mock UPI
-                    </button>
-                    <button
-                      onClick={() => setPaymentMethod('CARD')}
-                      className={`p-3.5 rounded-lg border text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                        paymentMethod === 'CARD'
-                          ? 'border-indigo-500 bg-indigo-500/10 text-white'
-                          : 'border-neutral-800 bg-neutral-950 text-neutral-400 hover:text-white hover:border-neutral-700'
-                      }`}
-                    >
-                      💳 Mock Card
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={() => { setShowCheckout(false); setCheckoutError(''); }}
-                    disabled={checkoutLoading}
-                    className="flex-1 py-3 border border-neutral-800 hover:bg-neutral-800 text-neutral-300 text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleEnrollSubmit}
-                    disabled={checkoutLoading}
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer shadow-md shadow-indigo-600/25 border border-indigo-500/30 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {checkoutLoading ? (
-                      <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      'Pay & Enroll'
-                    )}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-6 space-y-6 flex flex-col items-center">
-                <div className="w-16 h-16 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center text-green-400 text-3xl shadow-xl shadow-green-500/5">
-                  ✓
+      {/* Interactive Mock Payment Gateway Modal */}
+      {showMockModal && currentOrderData && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-[28px] max-w-md w-full p-6 shadow-2xl space-y-5 relative animate-fade-in-up">
+            
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
+                  <Coins className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-2 font-sans">Payment Successful!</h3>
-                  <p className="text-xs text-neutral-400 max-w-xs mx-auto font-medium leading-relaxed">
-                    You have successfully enrolled in <strong className="text-neutral-200">{course.title}</strong>.
-                  </p>
+                  <h3 className="font-heading font-black text-base text-[#0F172A]">Mock Payment Gateway</h3>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    TEST ENVIRONMENT ACTIVE
+                  </span>
                 </div>
+              </div>
+              <button
+                onClick={() => setShowMockModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
 
-                <div className="w-full bg-neutral-950 border border-neutral-900 rounded-xl p-4 space-y-2 text-[10px] font-medium text-neutral-500 text-left">
-                  <div className="flex justify-between">
-                    <span>Receipt No:</span>
-                    <span className="font-semibold text-neutral-300">{transactionId}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Amount Paid:</span>
-                    <span className="font-semibold text-neutral-300">₹{course.price}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Access Status:</span>
-                    <span className="font-semibold text-green-400 uppercase">UNLOCKED</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setShowCheckout(false);
-                    setCheckoutSuccess(false);
-                    router.push(`/courses/${course.id}/learn`);
-                  }}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer border border-indigo-500/30 text-center block shadow-lg shadow-indigo-600/20"
-                >
-                  Start Learning Now
-                </button>
+            {/* Error inside modal */}
+            {mockModalError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-[12px] font-bold">
+                {mockModalError}
               </div>
             )}
+
+            {/* Order Details summary */}
+            <div className="bg-slate-50 border border-slate-100 rounded-[18px] p-4 space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500 font-semibold">Program:</span>
+                <span className="font-bold text-[#0F172A] truncate max-w-[200px]">{course.title}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500 font-semibold">Order ID:</span>
+                <span className="font-mono text-[11px] font-bold text-slate-700">{currentOrderData.orderId}</span>
+              </div>
+              <div className="flex justify-between text-xs pt-1 border-t border-slate-200/60">
+                <span className="text-slate-600 font-bold">Amount Payable:</span>
+                <span className="text-base font-black text-[#0F172A]">₹{currentOrderData.amount}</span>
+              </div>
+            </div>
+
+            {/* Payment Method Selector */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-600">Select Mock Payment Method:</label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "UPI", label: "UPI Instant" },
+                  { id: "CARD", label: "Test Card" },
+                  { id: "NETBANKING", label: "NetBanking" }
+                ].map((pm) => (
+                  <button
+                    key={pm.id}
+                    type="button"
+                    onClick={() => setMockPaymentMethod(pm.id)}
+                    className={`py-2 px-3 rounded-[12px] text-xs font-bold border transition-all cursor-pointer ${
+                      mockPaymentMethod === pm.id
+                        ? "bg-gold text-[#0F172A] border-transparent shadow-xs"
+                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                    }`}
+                  >
+                    {pm.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Pay Action Button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleCompleteMockPayment}
+                disabled={mockVerifying}
+                className="w-full h-12 rounded-full bg-gold hover:bg-gold-light text-[#0F172A] font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {mockVerifying ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-[#0F172A]/20 border-t-[#0F172A] rounded-full animate-spin" />
+                    <span>Verifying Payment...</span>
+                  </>
+                ) : (
+                  <span>Pay ₹{currentOrderData.amount} (Complete Test Payment)</span>
+                )}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
+
+      <Footer />
     </main>
   );
 }

@@ -1,54 +1,77 @@
-'use client';
-import API_BASE_URL from '@/config/api';
-
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+"use client";
+import API_BASE_URL from "@/config/api";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import {
+  BookOpen,
+  User,
+  Lock,
+  LogOut,
+  ChevronRight,
+  Award,
+  Smartphone,
+  CheckCircle,
+} from "lucide-react";
 
 export default function ProfilePage() {
   const { user, token, loading, logout, updateUser } = useAuth();
   const router = useRouter();
 
   // Profile fields state
-  const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [profileImage, setProfileImage] = useState('');
-  const [profileMessage, setProfileMessage] = useState('');
-  const [profileError, setProfileError] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [profileImage, setProfileImage] = useState("");
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
   const [profileLoading, setProfileLoading] = useState(false);
 
   // Password fields state
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   // Courses states
-  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
+  const [enrolledPrograms, setEnrolledPrograms] = useState<any[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [downloadingCertId, setDownloadingCertId] = useState<number | null>(null);
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'courses'>('courses');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'courses'>("courses");
+
+  // Read URL search parameter for active tab selection
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab === "profile" || tab === "password" || tab === "courses") {
+        setActiveTab(tab as any);
+      }
+    }
+  }, []);
 
   // Load enrolled courses
   useEffect(() => {
-    if (user && token && activeTab === 'courses') {
+    if (user && token && activeTab === "courses") {
       setCoursesLoading(true);
       fetch(`${API_BASE_URL}/me/courses`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.status === 'SUCCESS' && Array.isArray(result.data)) {
-          setEnrolledCourses(result.data);
-        }
-      })
-      .catch((err) => console.error('Failed to load courses', err))
-      .finally(() => setCoursesLoading(false));
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.status === "SUCCESS" && Array.isArray(result.data)) {
+            setEnrolledPrograms(result.data);
+          }
+        })
+        .catch((err) => console.error("Failed to load business programs", err))
+        .finally(() => setCoursesLoading(false));
     }
   }, [user, token, activeTab]);
 
@@ -56,11 +79,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login');
+        router.push("/login");
       } else {
-        setFullName(user.fullName || '');
-        setPhone(user.phone || '');
-        setProfileImage(user.profileImage || '');
+        setFullName(user.fullName || "");
+        setPhone(user.phone || "");
+        setProfileImage(user.profileImage || "");
       }
     }
   }, [user, loading, router]);
@@ -70,58 +93,50 @@ export default function ProfilePage() {
     setDownloadingCertId(courseId);
     try {
       const res = await fetch(`${API_BASE_URL}/courses/${courseId}/certificates/claim`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
       const result = await res.json();
-      if (result.status === 'SUCCESS' && result.data?.certificateNumber) {
-        window.open(`${API_BASE_URL}/certificates/${result.data.certificateNumber}/download`, '_blank');
+      if (result.status === "SUCCESS" && result.data?.certificateNumber) {
+        window.open(`${API_BASE_URL}/certificates/${result.data.certificateNumber}/download`, "_blank");
       } else {
-        alert(result.message || 'Failed to claim certificate.');
+        alert(result.message || "Failed to claim certificate.");
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to connect to server.');
+      alert("Failed to connect to server.");
     } finally {
       setDownloadingCertId(null);
     }
   };
 
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProfileMessage('');
-    setProfileError('');
+    setProfileMessage("");
+    setProfileError("");
     setProfileLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/me`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ fullName, phone, profileImage: profileImage || null }),
       });
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to update profile.');
+        throw new Error(result.message || "Failed to update profile.");
       }
 
       updateUser(result.data);
-      setProfileMessage('Profile updated successfully!');
+      setProfileMessage("Profile updated successfully!");
     } catch (err: any) {
-      setProfileError(err.message || 'An error occurred while updating profile.');
+      setProfileError(err.message || "An error occurred while updating profile.");
     } finally {
       setProfileLoading(false);
     }
@@ -129,30 +144,30 @@ export default function ProfilePage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordMessage('');
-    setPasswordError('');
+    setPasswordMessage("");
+    setPasswordError("");
     setPasswordLoading(true);
 
     try {
       const response = await fetch(`${API_BASE_URL}/me/password`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ oldPassword, newPassword }),
       });
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to update password.');
+        throw new Error(result.message || "Failed to update password.");
       }
 
-      setPasswordMessage('Password changed successfully!');
-      setOldPassword('');
-      setNewPassword('');
+      setPasswordMessage("Password changed successfully!");
+      setOldPassword("");
+      setNewPassword("");
     } catch (err: any) {
-      setPasswordError(err.message || 'An error occurred while changing password.');
+      setPasswordError(err.message || "An error occurred while changing password.");
     } finally {
       setPasswordLoading(false);
     }
@@ -160,176 +175,170 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    router.push("/");
   };
 
-  return (
-    <main className="min-h-screen bg-[#09090b] text-neutral-200 relative overflow-hidden flex flex-col">
-      {/* Decorative blurred blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Header / Navbar */}
-      <header className="z-10 bg-neutral-950/80 backdrop-blur border-b border-neutral-900/80 px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
-          <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
-          YEDC Academy
-        </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/courses" className="hover:text-white transition-colors">Explore Courses</Link>
-          <Link href="/about" className="hover:text-white transition-colors">About Us</Link>
-          <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
-          {user && user.role === 'ADMIN' && (
-            <Link href="/admin/courses" className="text-indigo-400 hover:text-indigo-350 transition-colors font-semibold">Admin Panel</Link>
-          )}
-        </nav>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-white">{user.fullName}</p>
-            <p className="text-xs text-neutral-500">{user.email}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 rounded-lg text-xs font-semibold bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-all cursor-pointer"
-          >
-            Logout
-          </button>
+  if (loading || !user) {
+    return (
+      <main className="min-h-screen bg-background flex flex-col font-sans pt-24">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin" />
         </div>
-      </header>
+        <Footer />
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-background text-[#0F172A] flex flex-col font-sans pt-24">
+      <Navbar />
 
       {/* Main Content Area */}
-      <div className="flex-1 max-w-5xl w-full mx-auto p-6 sm:p-8 z-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="flex-1 max-w-screen-xl w-full mx-auto p-6 sm:p-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+        
         {/* Sidebar Nav */}
-        <aside className="md:col-span-1 space-y-2">
-          <div className="bg-neutral-950 border border-neutral-900 rounded-xl p-5 mb-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 mx-auto flex items-center justify-center text-xl font-bold text-white shadow-md shadow-indigo-600/10 mb-3">
-              {user.fullName.charAt(0).toUpperCase()}
+        <aside className="md:col-span-1 space-y-4">
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-5 text-center space-y-3">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-gold to-gold-light mx-auto flex items-center justify-center text-xl font-black text-[#0F172A] uppercase shadow-inner">
+              {user.fullName.charAt(0)}
             </div>
-            <h3 className="font-semibold text-white text-sm">{user.fullName}</h3>
-            <span className="inline-flex items-center mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase">
-              {user.role}
-            </span>
+            <div>
+              <h3 className="font-extrabold text-[#0F172A] text-sm font-heading">{user.fullName}</h3>
+              <span className="inline-flex items-center mt-1.5 px-3.5 py-1 rounded-[16px] text-[10px] font-extrabold tracking-wider bg-gold/10 text-gold border border-gold/20 uppercase font-heading">
+                {user.role === "ADMIN" ? "Platform Admin" : "Entrepreneur"}
+              </span>
+            </div>
           </div>
 
-          <button
-            onClick={() => setActiveTab('courses')}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-3 ${
-              activeTab === 'courses'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            My Courses
-          </button>
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-2.5 space-y-1">
+            <button
+              onClick={() => setActiveTab("courses")}
+              className={`w-full text-left px-4 py-3 rounded-[16px] text-xs font-bold transition-all flex items-center gap-3 cursor-pointer ${
+                activeTab === "courses"
+                  ? "bg-gold text-[#0F172A]"
+                  : "text-slate-500 hover:text-[#0F172A] hover:bg-slate-50"
+              }`}
+            >
+              <BookOpen className="w-4 h-4 shrink-0" />
+              My Programs
+            </button>
 
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-3 ${
-              activeTab === 'profile'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            Edit Profile
-          </button>
+            <button
+              onClick={() => setActiveTab("profile")}
+              className={`w-full text-left px-4 py-3 rounded-[16px] text-xs font-bold transition-all flex items-center gap-3 cursor-pointer ${
+                activeTab === "profile"
+                  ? "bg-gold text-[#0F172A]"
+                  : "text-slate-500 hover:text-[#0F172A] hover:bg-slate-50"
+              }`}
+            >
+              <User className="w-4 h-4 shrink-0" />
+              Edit Profile
+            </button>
 
-          <button
-            onClick={() => setActiveTab('password')}
-            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all flex items-center gap-3 ${
-              activeTab === 'password'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
-                : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m-9 4a2 2 0 012-2m-2 4h.01M17 21a2 2 0 01-2-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2z" />
-            </svg>
-            Change Password
-          </button>
+            <button
+              onClick={() => setActiveTab("password")}
+              className={`w-full text-left px-4 py-3 rounded-[16px] text-xs font-bold transition-all flex items-center gap-3 cursor-pointer ${
+                activeTab === "password"
+                  ? "bg-gold text-[#0F172A]"
+                  : "text-slate-500 hover:text-[#0F172A] hover:bg-slate-50"
+              }`}
+            >
+              <Lock className="w-4 h-4 shrink-0" />
+              Change Password
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-4 py-3 rounded-[16px] text-xs font-bold text-[#EF4444] hover:bg-red-50 transition-all flex items-center gap-3 cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              Logout
+            </button>
+          </div>
         </aside>
 
         {/* Tab content panel */}
         <section className="md:col-span-3">
-          <div className="bg-neutral-900/40 backdrop-blur border border-neutral-800/80 rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/35">
-            {activeTab === 'courses' && (
-              <div>
-                <h2 className="text-xl font-bold text-white mb-2 font-sans">My Enrolled Courses</h2>
-                <p className="text-xs text-neutral-500 mb-6 font-semibold">Access your course library and track your progress</p>
+          <div className="bg-white border border-[#E5E7EB] rounded-[24px] p-6 sm:p-8 shadow-sm">
+            
+            {activeTab === "courses" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-black text-[#0F172A] font-heading">My Enrolled Programs</h2>
+                  <p className="text-xs text-slate-500 mt-1 font-semibold">Access your launch blueprints and track execution progress.</p>
+                </div>
 
                 {coursesLoading ? (
-                  <div className="flex justify-center py-12">
-                    <div className="w-8 h-8 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
+                  <div className="flex justify-center py-16">
+                    <div className="w-8 h-8 border-2 border-gold/20 border-t-gold rounded-full animate-spin" />
                   </div>
-                ) : enrolledCourses.length === 0 ? (
-                  <div className="text-center py-16 border border-dashed border-neutral-800 rounded-2xl bg-neutral-950/20">
-                    <p className="text-sm text-neutral-500 mb-5 font-semibold">You have not enrolled in any masterclasses yet.</p>
-                    <Link
-                      href="/courses"
-                      className="inline-flex py-3 px-6 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-indigo-600/20 border border-indigo-500/30"
-                    >
-                      Browse Masterclasses
+                ) : enrolledPrograms.length === 0 ? (
+                  <div className="text-center py-16 border border-dashed border-slate-200 bg-slate-50 rounded-[24px] space-y-4">
+                    <p className="text-xs text-slate-500 font-semibold">You have not unlocked any business blueprints yet.</p>
+                    <Link href="/courses">
+                      <PrimaryButton className="text-xs">Browse Business Programs</PrimaryButton>
                     </Link>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {enrolledCourses.map((item) => (
+                    {enrolledPrograms.map((item) => (
                       <div
                         key={item.id}
-                        className="group bg-neutral-950 border border-neutral-900 rounded-xl overflow-hidden hover:border-neutral-800 transition-all flex flex-col shadow-lg shadow-black/15"
+                        className="group bg-slate-50 border border-slate-200 rounded-[24px] overflow-hidden flex flex-col shadow-sm hover:border-gold/30 transition-all duration-200"
                       >
-                        <div className="h-36 w-full relative bg-neutral-900 overflow-hidden">
+                        <div className="h-36 w-full relative bg-white overflow-hidden border-b border-slate-200">
                           <img
-                            src={item.courseThumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600'}
+                            src={item.courseThumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600"}
                             alt={item.courseTitle}
-                            className="w-full h-full object-cover group-hover:scale-102 transition-all duration-350"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
-                          <div>
-                            <h3 className="text-sm font-bold text-white leading-snug line-clamp-1 group-hover:text-indigo-400 transition-colors">
-                              {item.courseTitle}
+                          <div className="space-y-1">
+                            <h3 className="text-sm font-black text-[#0F172A] line-clamp-1 group-hover:text-gold transition-colors font-heading">
+                              {item.courseTitle.replace("Course", "Business Program")}
                             </h3>
-                            <p className="text-[10px] text-neutral-500 line-clamp-2 mt-1 font-semibold leading-relaxed">
+                            <p className="text-[10px] text-slate-500 line-clamp-2 font-semibold leading-relaxed">
                               {item.courseSubtitle}
                             </p>
                           </div>
-                          
+
+                          {/* Progress meter */}
                           <div className="space-y-2">
-                            <div className="flex justify-between items-center text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
-                              <span>Progress</span>
+                            <div className="flex justify-between items-center text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                              <span>Module Progress</span>
                               <span>{item.progressPercentage}%</span>
                             </div>
-                            <div className="w-full bg-neutral-900 rounded-full h-1.5 overflow-hidden border border-neutral-850">
+                            <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden relative">
                               <div
-                                  className="bg-indigo-500 h-1.5 rounded-full transition-all duration-550"
-                                  style={{ width: `${item.progressPercentage}%` }}
+                                className="bg-gold h-1.5 rounded-full transition-all duration-300"
+                                style={{ width: `${item.progressPercentage}%` }}
                               />
                             </div>
                           </div>
 
-                          <div className="flex gap-2">
-                            <Link
-                              href={`/courses/${item.courseId}/learn`}
-                              className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-250 hover:text-white text-xs font-bold rounded-lg text-center transition-all block cursor-pointer"
-                            >
-                              {item.progressPercentage === 0 ? 'Start Course' : item.progressPercentage === 100 ? 'Review Syllabus' : 'Resume Learning'}
+                          <div className="flex flex-col sm:flex-row gap-2 border-t border-slate-200/60 pt-4">
+                            <Link href={`/courses/${item.courseId}/learn`} className="flex-1">
+                              <PrimaryButton className="w-full h-10 text-xs font-black shadow-md flex items-center justify-center gap-2">
+                                <span>
+                                  {item.progressPercentage === 0
+                                    ? "Start Learning Now ▶"
+                                    : item.progressPercentage === 100
+                                    ? "Review Modules ▶"
+                                    : "Continue Learning ▶"}
+                                </span>
+                              </PrimaryButton>
                             </Link>
-                            
+
                             {item.progressPercentage === 100 && (
-                              <button
+                              <PrimaryButton
                                 onClick={() => handleDownloadCertificate(item.courseId)}
                                 disabled={downloadingCertId === item.courseId}
-                                className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 border border-indigo-500/30 text-white text-xs font-bold rounded-lg text-center transition-all cursor-pointer disabled:opacity-50"
+                                className="h-10 text-xs px-4 whitespace-nowrap bg-[#0F172A] text-white hover:bg-slate-800"
                               >
-                                {downloadingCertId === item.courseId ? 'Claiming...' : '🎓 Certificate'}
-                              </button>
+                                {downloadingCertId === item.courseId ? "Claiming..." : "🎓 Claim Certificate"}
+                              </PrimaryButton>
                             )}
                           </div>
                         </div>
@@ -340,136 +349,142 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {activeTab === 'profile' && (
-              <div>
-                <h2 className="text-xl font-bold text-white mb-2">Account Settings</h2>
-                <p className="text-xs text-neutral-500 mb-6">Manage your public information and profile attributes</p>
+            {activeTab === "profile" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-black text-[#0F172A] font-heading">Account Settings</h2>
+                  <p className="text-xs text-slate-500 mt-1 font-semibold">Manage your public information and profile attributes.</p>
+                </div>
 
                 {profileMessage && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-xs py-3 px-4 rounded-lg mb-6">
+                  <div className="bg-green-50 border border-green-200 text-green-700 text-xs py-3 px-4 rounded-[16px] font-bold">
                     {profileMessage}
                   </div>
                 )}
                 {profileError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-lg mb-6">
+                  <div className="bg-red-50 border border-red-200 text-red-700 text-xs py-3 px-4 rounded-[16px] font-bold">
                     {profileError}
                   </div>
                 )}
 
                 <form onSubmit={handleUpdateProfile} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Full Name</label>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                        Full Name
+                      </label>
                       <input
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         required
-                        className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                        className="w-full h-12 px-4 rounded-[16px] bg-slate-50 border border-slate-200 hover:border-gold/30 focus:border-gold text-[#0F172A] text-sm focus:outline-none transition-all duration-200 font-semibold"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Email (Static)</label>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                        Email Address (Static)
+                      </label>
                       <input
                         type="email"
                         value={user.email}
                         disabled
-                        className="w-full px-4 py-3 rounded-lg bg-neutral-950/40 border border-neutral-900 text-neutral-500 text-sm cursor-not-allowed"
+                        className="w-full h-12 px-4 rounded-[16px] bg-slate-100 border border-slate-200 text-slate-400 text-sm cursor-not-allowed font-semibold"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Phone Number</label>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      Phone Number
+                    </label>
                     <input
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 99999 99999"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                      className="w-full h-12 px-4 rounded-[16px] bg-slate-50 border border-slate-200 hover:border-gold/30 focus:border-gold text-[#0F172A] text-sm focus:outline-none transition-all duration-200 font-semibold"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Profile Image URL</label>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      Profile Image URL
+                    </label>
                     <input
                       type="text"
                       value={profileImage}
                       onChange={(e) => setProfileImage(e.target.value)}
                       placeholder="https://example.com/avatar.jpg"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                      className="w-full h-12 px-4 rounded-[16px] bg-slate-50 border border-slate-200 hover:border-gold/30 focus:border-gold text-[#0F172A] text-sm focus:outline-none transition-all duration-200 font-semibold"
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={profileLoading}
-                    className="py-3 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all cursor-pointer shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {profileLoading ? (
-                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    ) : 'Save Changes'}
-                  </button>
+                  <PrimaryButton type="submit" loading={profileLoading} className="px-6 h-11 text-xs">
+                    Save Changes
+                  </PrimaryButton>
                 </form>
               </div>
             )}
 
-            {activeTab === 'password' && (
-              <div>
-                <h2 className="text-xl font-bold text-white mb-2">Security</h2>
-                <p className="text-xs text-neutral-500 mb-6">Update your account credentials</p>
+            {activeTab === "password" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-black text-[#0F172A] font-heading">Security Details</h2>
+                  <p className="text-xs text-slate-500 mt-1 font-semibold">Update your account credentials.</p>
+                </div>
 
                 {passwordMessage && (
-                  <div className="bg-green-500/10 border border-green-500/20 text-green-400 text-xs py-3 px-4 rounded-lg mb-6">
+                  <div className="bg-green-50 border border-green-200 text-green-700 text-xs py-3 px-4 rounded-[16px] font-bold">
                     {passwordMessage}
                   </div>
                 )}
                 {passwordError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-lg mb-6">
+                  <div className="bg-red-50 border border-red-200 text-red-700 text-xs py-3 px-4 rounded-[16px] font-bold">
                     {passwordError}
                   </div>
                 )}
 
                 <form onSubmit={handleChangePassword} className="space-y-5">
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Current Password</label>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      Current Password
+                    </label>
                     <input
                       type="password"
                       value={oldPassword}
                       onChange={(e) => setOldPassword(e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                      className="w-full h-12 px-4 rounded-[16px] bg-slate-50 border border-slate-200 hover:border-gold/30 focus:border-gold text-[#0F172A] text-sm focus:outline-none transition-all duration-200 font-semibold"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">New Password</label>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
+                      New Password
+                    </label>
                     <input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                      className="w-full h-12 px-4 rounded-[16px] bg-slate-50 border border-slate-200 hover:border-gold/30 focus:border-gold text-[#0F172A] text-sm focus:outline-none transition-all duration-200 font-semibold"
                     />
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={passwordLoading}
-                    className="py-3 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-all cursor-pointer shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {passwordLoading ? (
-                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    ) : 'Update Password'}
-                  </button>
+                  <PrimaryButton type="submit" loading={passwordLoading} className="px-6 h-11 text-xs">
+                    Update Password
+                  </PrimaryButton>
                 </form>
               </div>
             )}
           </div>
         </section>
       </div>
+
+      <Footer />
     </main>
   );
 }

@@ -1,10 +1,12 @@
-'use client';
-import API_BASE_URL from '@/config/api';
-
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+"use client";
+import API_BASE_URL from "@/config/api";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { AdminNavbar } from "@/components/AdminNavbar";
+import { Footer } from "@/components/Footer";
+import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 
 interface Category {
   id: number;
@@ -21,15 +23,15 @@ export default function NewCoursePage() {
   const router = useRouter();
 
   // Form states
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('0');
-  const [level, setLevel] = useState('BEGINNER');
-  const [language, setLanguage] = useState('English');
-  const [thumbnail, setThumbnail] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [instructorId, setInstructorId] = useState('');
+  const [title, setTitle] = useState("");
+  const [subtitle, setSubtitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("0");
+  const [level, setLevel] = useState("BEGINNER");
+  const [language, setLanguage] = useState("English");
+  const [thumbnail, setThumbnail] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [instructorId, setInstructorId] = useState("");
 
   // Dropdown options
   const [categories, setCategories] = useState<Category[]>([]);
@@ -41,8 +43,8 @@ export default function NewCoursePage() {
 
   // Redirect non-admins
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'ADMIN')) {
-      router.push('/');
+    if (!loading && (!user || user.role !== "ADMIN")) {
+      router.push("/");
     }
   }, [user, loading, router]);
 
@@ -60,17 +62,17 @@ export default function NewCoursePage() {
         const catData = await catRes.json();
         const instData = await instRes.json();
 
-        if (catData.status === 'SUCCESS' && Array.isArray(catData.data)) {
+        if (catData.status === "SUCCESS" && Array.isArray(catData.data)) {
           setCategories(catData.data);
           if (catData.data.length > 0) setCategoryId(catData.data[0].id.toString());
         }
-        if (instData.status === 'SUCCESS' && Array.isArray(instData.data)) {
+        if (instData.status === "SUCCESS" && Array.isArray(instData.data)) {
           setInstructors(instData.data);
           if (instData.data.length > 0) setInstructorId(instData.data[0].id.toString());
         }
       } catch (err) {
-        console.error('Failed to load form dependencies', err);
-        setError('Failed to fetch categories or instructors');
+        console.error("Failed to load form dependencies", err);
+        setError("Failed to fetch categories or instructors");
       } finally {
         setLoading(false);
       }
@@ -99,69 +101,53 @@ export default function NewCoursePage() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/admin/courses`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       const result = await res.json();
 
-      if (res.ok && result.status === 'SUCCESS') {
-        router.push('/admin/courses');
+      if (res.ok && result.status === "SUCCESS") {
+        router.push("/admin/courses");
       } else {
-        setError(result.message || 'Failed to create course');
+        setError(result.message || "Failed to create course");
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred during submission.');
+      setError("An error occurred during submission.");
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading || !user || user.role !== 'ADMIN') {
+  if (loading || !user || user.role !== "ADMIN") {
     return (
-      <div className="min-h-screen bg-[#09090b] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin" />
-      </div>
+      <main className="min-h-screen bg-background flex flex-col font-sans">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-gold/20 border-t-gold rounded-full animate-spin" />
+        </div>
+      </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#09090b] text-neutral-200 relative overflow-hidden flex flex-col">
-      {/* Background blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[140px] pointer-events-none" />
-
-      {/* Global Header */}
-      <header className="z-10 bg-neutral-950/60 backdrop-blur-md border-b border-neutral-900/60 px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
-          <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-base shadow-lg shadow-indigo-600/35">Y</span>
-          YEDC Admin
-        </Link>
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-400">
-          <Link href="/admin" className="hover:text-white transition-colors">Dashboard</Link>
-          <Link href="/admin/courses" className="text-white hover:text-white transition-colors">Courses</Link>
-          <Link href="/admin/students" className="hover:text-white transition-colors">Students</Link>
-          <Link href="/admin/payments" className="hover:text-white transition-colors">Payments</Link>
-          <span className="text-neutral-700">|</span>
-          <Link href="/courses" className="hover:text-white transition-colors">Public Site</Link>
-        </nav>
-      </header>
+    <main className="min-h-screen bg-background text-primaryText flex flex-col font-sans">
+      <AdminNavbar />
 
       {/* Form Area */}
-      <section className="z-10 max-w-2xl w-full mx-auto px-6 py-12 flex-1 flex flex-col justify-center">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-white">Create New Course</h1>
-          <p className="text-sm text-neutral-400">Populate course details to register a draft module</p>
+      <section className="z-10 max-w-2xl w-full mx-auto px-6 py-12 flex-1 flex flex-col justify-center space-y-8">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold text-primaryText font-heading">Create New Course</h1>
+          <p className="text-xs text-secondaryText font-medium">Populate course details to register a draft module</p>
         </div>
 
-        <div className="bg-neutral-900/60 backdrop-blur-xl border border-neutral-800/80 rounded-2xl p-8 shadow-2xl shadow-black/50">
+        <div className="bg-surface border border-border rounded-2xl p-8 shadow-sm">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs py-3 px-4 rounded-lg mb-6 text-center">
+            <div className="bg-brandRed/10 border border-brandRed/20 text-brandRed text-xs py-3 px-4 rounded-xl mb-6 text-center font-bold">
               {error}
             </div>
           )}
@@ -169,90 +155,94 @@ export default function NewCoursePage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Title */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Course Title</label>
+              <div className="md:col-span-2 space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Course Title</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Startup Foundations: Zero to One"
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText placeholder-mutedText text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
               {/* Subtitle */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Subtitle / Brief tagline</label>
+              <div className="md:col-span-2 space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Subtitle / Tagline</label>
                 <input
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
                   placeholder="Master the frameworks to launch your business and raise initial capital"
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText placeholder-mutedText text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
               {/* Description */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Description</label>
+              <div className="md:col-span-2 space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Description</label>
                 <textarea
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Detailed course description..."
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 transition-all resize-none"
+                  className="w-full p-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText placeholder-mutedText text-sm focus:outline-none transition-all duration-200 resize-none"
                 />
               </div>
 
               {/* Category */}
-              <div>
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Category</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Category</label>
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText text-sm focus:outline-none transition-all duration-200 cursor-pointer"
                 >
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Instructor */}
-              <div>
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Instructor</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Instructor</label>
                 <select
                   value={instructorId}
                   onChange={(e) => setInstructorId(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText text-sm focus:outline-none transition-all duration-200 cursor-pointer"
                 >
                   {instructors.map((inst) => (
-                    <option key={inst.id} value={inst.id}>{inst.name}</option>
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Price */}
-              <div>
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Price (₹)</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Price (₹)</label>
                 <input
                   type="number"
                   min="0"
                   required
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
               {/* Level */}
-              <div>
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Level</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Level</label>
                 <select
                   value={level}
                   onChange={(e) => setLevel(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText text-sm focus:outline-none transition-all duration-200 cursor-pointer"
                 >
                   <option value="BEGINNER">Beginner</option>
                   <option value="INTERMEDIATE">Intermediate</option>
@@ -261,59 +251,45 @@ export default function NewCoursePage() {
               </div>
 
               {/* Language */}
-              <div>
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Language</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Language</label>
                 <input
                   type="text"
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
 
               {/* Thumbnail URL */}
-              <div>
-                <label className="block text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Thumbnail URL</label>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-secondaryText uppercase tracking-wider">Thumbnail URL</label>
                 <input
                   type="text"
                   value={thumbnail}
                   onChange={(e) => setThumbnail(e.target.value)}
                   placeholder="https://example.com/thumbnail.png"
-                  className="w-full px-4 py-3 rounded-lg bg-neutral-950 border border-neutral-800 text-white placeholder-neutral-600 text-sm focus:outline-none focus:border-indigo-500/80 transition-all"
+                  className="w-full h-12 px-4 rounded-xl bg-background border border-border hover:border-gold/50 focus:border-gold text-primaryText placeholder-mutedText text-sm focus:outline-none transition-all duration-200"
                 />
               </div>
             </div>
 
             {/* Actions */}
-            <div className="border-t border-neutral-800/60 pt-6 flex justify-end gap-3">
-              <Link
-                href="/admin/courses"
-                className="px-5 py-3 rounded-lg bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white text-xs font-semibold transition-all"
-              >
-                Cancel
+            <div className="border-t border-border pt-6 flex justify-end gap-3">
+              <Link href="/admin/courses">
+                <SecondaryButton type="button" className="h-10 text-xs">
+                  Cancel
+                </SecondaryButton>
               </Link>
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/25 border border-indigo-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-              >
-                {saving ? (
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                ) : 'Create Course'}
-              </button>
+              <PrimaryButton type="submit" loading={saving} className="h-10 text-xs">
+                Create Course
+              </PrimaryButton>
             </div>
           </form>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-neutral-950 border-t border-neutral-900 py-8 px-6 mt-12">
-        <div className="max-w-5xl w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-xs text-neutral-600 font-medium">
-            © 2026 Young Entrepreneur Development Centre. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

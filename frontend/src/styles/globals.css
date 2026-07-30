@@ -4,19 +4,103 @@
 
 @layer base {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --primary: #6366f1;
-    --primary-foreground: #ffffff;
-    --card: #18181b;
-    --card-foreground: #fafafa;
-    --border: #27272a;
+    --background: #F8FAFC;
+    --background-secondary: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-hover: #F1F5F9;
+    --foreground: #0F172A;
+    --foreground-secondary: #334155;
+    --muted: #64748B;
+    --disabled: #94A3B8;
+    --gold: #D4A017;
+    --gold-light: #E2B93C;
+    --border: #E5E7EB;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   color: var(--foreground);
   background-color: var(--background);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-manrope), system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  color: var(--foreground);
+  letter-spacing: -0.02em;
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+/* Transition utility classes */
+.transition-premium {
+  transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Premium Visual Depth Utilities */
+.bg-radial-gold-ambient {
+  background: radial-gradient(circle at center, rgba(212, 160, 23, 0.05) 0%, rgba(212, 160, 23, 0) 70%);
+}
+
+.shadow-premium-hover {
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px -1px rgba(212, 160, 23, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Continuous Infinite Marquee Animation (Right to Left) */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 80s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

@@ -20,6 +20,7 @@ public class AdminCurriculumService {
     private final CourseRepository courseRepository;
     private final SectionRepository sectionRepository;
     private final LessonRepository lessonRepository;
+    private final ProgressRepository progressRepository;
     private final SectionMapper sectionMapper;
 
     @Transactional
@@ -75,8 +76,11 @@ public class AdminCurriculumService {
 
         Long courseId = section.getCourse().getId();
 
-        // Delete all lessons under this section first to avoid foreign key violations
+        // Delete all progress records and lessons under this section first to avoid foreign key violations
         List<Lesson> lessons = lessonRepository.findAllBySectionIdOrderByDisplayOrderAsc(sectionId);
+        for (Lesson l : lessons) {
+            progressRepository.deleteAllByLessonId(l.getId());
+        }
         lessonRepository.deleteAll(lessons);
 
         sectionRepository.delete(section);
@@ -138,6 +142,10 @@ public class AdminCurriculumService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
 
         Long sectionId = lesson.getSection().getId();
+
+        // Delete associated student progress records first
+        progressRepository.deleteAllByLessonId(lessonId);
+
         lessonRepository.delete(lesson);
 
         // Reindex remaining lessons
