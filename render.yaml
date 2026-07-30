@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: yedc-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    region: singapore
+    plan: free
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres.chfutdrfdodxvjheqrti
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: Bhosale#pa55
+      - key: JWT_SECRET
+        value: 9a4f2c8d3b7a1e5f8g0h2i4j6k8l0m2n4o6p8q0r2s4t6u8v0w2x4y6z8A0B2C4D
+      - key: JWT_EXPIRATION_MS
+        value: "604800000"
+      - key: RAZORPAY_KEY_ID
+        value: rzp_test_mockKeyId
+      - key: RAZORPAY_KEY_SECRET
+        value: mockKeySecret

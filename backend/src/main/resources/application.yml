@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -22,6 +22,7 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     validate-on-migrate: false
+    repair-on-migrate: true
   mail:
     host: smtp.gmail.com
     port: 587
