@@ -93,12 +93,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-            "https://yedc-academy.vercel.app",
-            "http://localhost:3000",
-            "http://localhost:8080",
-            "http://127.0.0.1:3000"
-        ));
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "https://*.vercel.app",
             "https://*.onrender.com",
