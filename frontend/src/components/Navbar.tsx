@@ -76,8 +76,8 @@ export const Navbar: React.FC = () => {
             </Link>
           </div>
 
-          {/* Center: Centered Navigation (Desktop) */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
+          {/* Center: Centered Navigation (Desktop & Tablet) */}
+          <nav className="hidden md:flex items-center gap-3 lg:gap-8 text-xs lg:text-sm font-semibold">
             <NavLink href="/">Home</NavLink>
             <NavLink href="/courses">Explore Programs</NavLink>
             <NavLink href="/about">About Us</NavLink>
@@ -98,7 +98,7 @@ export const Navbar: React.FC = () => {
                 <UserMenu />
               </>
             ) : (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2.5 lg:gap-4">
                 <Link
                   href="/login"
                   className="text-[#334155] hover:text-[#0F172A] text-xs font-bold transition-colors duration-200 ease-out cursor-pointer"
