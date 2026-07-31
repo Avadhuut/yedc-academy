@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-background text-[#0F172A] font-sans antialiased selection:bg-[#D4AF37]/30 selection:text-white">
+      <body className="bg-background text-[#0F172A] font-sans antialiased selection:bg-[#D4AF37]/30 selection:text-white overflow-x-hidden w-full">
         <AuthProvider>
           {children}
         </AuthProvider>

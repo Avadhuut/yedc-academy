@@ -248,33 +248,33 @@ export default function Home() {
       <Navbar />
 
       {/* 1. Hero Section */}
-      <section className="relative pt-8 pb-10 md:pt-10 md:pb-12 lg:pt-12 lg:pb-14 px-6 border-b border-[#E5E7EB] bg-gradient-to-b from-white to-[#F8FAFC] overflow-hidden">
+      <section className="relative pt-6 pb-8 md:pt-10 md:pb-12 lg:pt-12 lg:pb-14 px-4 sm:px-6 border-b border-[#E5E7EB] bg-gradient-to-b from-white to-[#F8FAFC] overflow-hidden">
         <div className="absolute inset-0 bg-radial-gold-ambient pointer-events-none" />
-        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        <div className="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
 
           {/* Left Text Column */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#0F172A] font-heading leading-[1.1] max-w-2xl">
+          <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-left">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-[#0F172A] font-heading leading-[1.1] max-w-2xl">
               From Dream to <span className="text-gold">Business</span>
             </h1>
 
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight font-heading">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-800 tracking-tight font-heading">
               Learn How to Start Any Business with Industry Experts
             </h2>
 
-            <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-medium">
+            <p className="text-sm sm:text-lg text-slate-600 max-w-xl leading-relaxed font-medium">
               Master every stage of your entrepreneurial journey with practical business programs, project reports, vendor networks, machinery guidance, government scheme support, and expert mentorship—all designed to help you launch with confidence.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 pt-2 sm:pt-4">
               <Link href="/courses" className="w-full sm:w-auto">
-                <PrimaryButton className="w-full sm:w-auto">
-                  Explore Business Programs <ArrowRight className="w-4.5 h-4.5" />
+                <PrimaryButton className="w-full sm:w-auto text-xs sm:text-sm py-3">
+                  Explore Business Programs <ArrowRight className="w-4 h-4" />
                 </PrimaryButton>
               </Link>
               <SecondaryButton
                 onClick={() => handleSmoothScroll("success-stories")}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto text-xs sm:text-sm py-3"
               >
                 Watch Success Stories
               </SecondaryButton>
@@ -283,8 +283,8 @@ export default function Home() {
 
           {/* Right Column: 3-Image Collage inside Soft Blue Container Frame */}
           <div className="lg:col-span-5 max-w-[520px] w-full mx-auto lg:mx-0">
-            <div className="bg-[#E8F0FE]/70 p-3.5 rounded-[36px] shadow-sm border border-blue-100/60">
-              <div className="grid grid-cols-2 gap-3.5 h-[430px] w-full">
+            <div className="bg-[#E8F0FE]/70 p-2.5 sm:p-3.5 rounded-[28px] sm:rounded-[36px] shadow-sm border border-blue-100/60">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 h-[340px] sm:h-[430px] w-full">
                 
                 {/* 1. Left Tall Vertical Image Card */}
                 <div className="col-span-1 h-full rounded-[24px] overflow-hidden relative border border-white/80 shadow-xs group">
