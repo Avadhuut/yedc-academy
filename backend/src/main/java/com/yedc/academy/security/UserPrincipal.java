@@ -21,6 +21,8 @@ public class UserPrincipal implements UserDetails {
     private String email;
     @JsonIgnore
     private String password;
+    private String phone;
+    private String profileImage;
     private Collection<? extends GrantedAuthority> authorities;
     private boolean enabled;
 
@@ -34,6 +36,8 @@ public class UserPrincipal implements UserDetails {
                 account.getFullName(),
                 account.getEmail(),
                 account.getPassword(),
+                account.getPhone(),
+                account.getProfileImage(),
                 authorities,
                 "ACTIVE".equalsIgnoreCase(account.getStatus())
         );

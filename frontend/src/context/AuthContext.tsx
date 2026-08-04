@@ -49,6 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     setLoading(false);
+
+    // Warm-up ping to wake up backend if sleeping (non-blocking)
+    fetch(`${API_BASE_URL}/courses`, { method: 'GET' }).catch(() => {});
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -96,7 +99,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(result.message || 'Registration failed');
       }
       
-      await login(email, password);
+      const { accessToken, user: userData } = result.data;
+      setToken(accessToken);
+      setUser(userData);
+      setCookie('token', accessToken);
+      setCookie('user', JSON.stringify(userData));
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration');
       throw err;

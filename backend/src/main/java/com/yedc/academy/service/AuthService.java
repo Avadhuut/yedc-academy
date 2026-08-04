@@ -36,7 +36,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
 
     @Transactional
-    public ProfileResponse register(RegisterRequest registerRequest) {
+    public AuthResponse register(RegisterRequest registerRequest) {
         if (accountRepository.existsByEmail(registerRequest.getEmail())) {
             throw new BadRequestException("Email address already in use.");
         }
@@ -54,7 +54,19 @@ public class AuthService {
                 .build();
 
         Account savedAccount = accountRepository.save(account);
-        return mapToProfileResponse(savedAccount);
+
+        UserPrincipal userPrincipal = UserPrincipal.create(savedAccount);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userPrincipal, null, userPrincipal.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwt = tokenProvider.generateToken(authentication);
+
+        return AuthResponse.builder()
+                .accessToken(jwt)
+                .user(mapToProfileResponse(savedAccount))
+                .build();
     }
 
     public AuthResponse login(LoginRequest loginRequest) {
@@ -69,12 +81,22 @@ public class AuthService {
         String jwt = tokenProvider.generateToken(authentication);
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        Account account = accountRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new BadRequestException("Authenticated user account not found."));
+        ProfileResponse userProfile = ProfileResponse.builder()
+                .id(userPrincipal.getId())
+                .fullName(userPrincipal.getFullName())
+                .email(userPrincipal.getEmail())
+                .phone(userPrincipal.getPhone())
+                .profileImage(userPrincipal.getProfileImage())
+                .role(userPrincipal.getAuthorities().stream()
+                        .findFirst()
+                        .map(a -> a.getAuthority().replace("ROLE_", ""))
+                        .orElse("STUDENT"))
+                .status(userPrincipal.isEnabled() ? "ACTIVE" : "INACTIVE")
+                .build();
 
         return AuthResponse.builder()
                 .accessToken(jwt)
-                .user(mapToProfileResponse(account))
+                .user(userProfile)
                 .build();
     }
 

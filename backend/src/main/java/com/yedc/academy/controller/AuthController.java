@@ -18,8 +18,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<ProfileResponse>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        ProfileResponse response = authService.register(registerRequest);
+    public ResponseEntity<ApiResponse<AuthResponse>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        AuthResponse response = authService.register(registerRequest);
         return new ResponseEntity<>(
                 new ApiResponse<>("SUCCESS", "Registration successful.", response),
                 HttpStatus.CREATED
