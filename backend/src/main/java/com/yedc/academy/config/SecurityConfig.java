@@ -49,7 +49,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/api/v1/ping").permitAll()
+                .requestMatchers("/api/v1/ping", "/api/v1/ping/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/api/v1/courses/**", "/api/v1/categories/**", "/api/v1/instructors/**").permitAll()
                 .requestMatchers("/api/v1/certificates/**", "/api/v1/contact/**").permitAll()

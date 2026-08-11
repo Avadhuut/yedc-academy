@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/ping")
+@RequestMapping({"/api/v1/ping", "/api/v1/auth/ping"})
 public class PingController {
 
     @GetMapping
