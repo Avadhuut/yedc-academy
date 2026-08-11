@@ -35,7 +35,7 @@ public class CourseController {
         );
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:[0-9]+}")
     public ResponseEntity<ApiResponse<CourseDetailsResponse>> getCourseDetails(
             @PathVariable("id") Long id,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
