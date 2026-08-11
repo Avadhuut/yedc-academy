@@ -17,6 +17,20 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @GetMapping("/ping")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> ping() {
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        "SUCCESS",
+                        "Pong",
+                        Map.of(
+                                "status", "UP",
+                                "timestamp", java.time.Instant.now().toString()
+                        )
+                )
+        );
+    }
+
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         AuthResponse response = authService.register(registerRequest);
