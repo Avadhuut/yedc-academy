@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 const BACKEND_PING_URL = process.env.NEXT_PUBLIC_API_URL 
-  ? `${process.env.NEXT_PUBLIC_API_URL}/auth/ping`
-  : 'https://yedc-backend.onrender.com/api/v1/auth/ping';
+  ? `${process.env.NEXT_PUBLIC_API_URL}/courses/ping`
+  : 'https://yedc-backend.onrender.com/api/v1/courses/ping';
 
 export async function GET() {
   try {

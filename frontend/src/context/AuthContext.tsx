@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Warm-up ping to wake up backend fast if sleeping (non-blocking)
     const pingBackend = () => {
-      fetch(`${API_BASE_URL}/auth/ping`, { method: 'GET', cache: 'no-store' }).catch(() => {});
+      fetch(`${API_BASE_URL}/courses/ping`, { method: 'GET', cache: 'no-store' }).catch(() => {});
     };
     pingBackend();
 

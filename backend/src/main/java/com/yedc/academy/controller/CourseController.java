@@ -19,6 +19,13 @@ public class CourseController {
 
     private final CourseService courseService;
 
+    @GetMapping("/ping")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> ping() {
+        return ResponseEntity.ok(
+                new ApiResponse<>("SUCCESS", "Pong", java.util.Map.of("status", "UP"))
+        );
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourseResponse>>> getAllCourses(
             @RequestParam(value = "categoryId", required = false) Long categoryId) {
