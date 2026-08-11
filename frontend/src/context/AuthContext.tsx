@@ -64,11 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password }),
       });
 
       const result = await response.json();
@@ -93,11 +94,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (fullName: string, email: string, password: string, phone?: string) => {
     setLoading(true);
     setError(null);
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const cleanName = fullName ? fullName.trim() : '';
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password, phone }),
+        body: JSON.stringify({ fullName: cleanName, email: cleanEmail, password, phone }),
       });
 
       const result = await response.json();

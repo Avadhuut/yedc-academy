@@ -37,7 +37,11 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest registerRequest) {
-        if (accountRepository.existsByEmail(registerRequest.getEmail())) {
+        String normalizedEmail = registerRequest.getEmail() != null 
+                ? registerRequest.getEmail().trim().toLowerCase() 
+                : "";
+
+        if (accountRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new BadRequestException("Email address already in use.");
         }
 
@@ -45,8 +49,8 @@ public class AuthService {
                 .orElseThrow(() -> new BadRequestException("Default STUDENT role not set."));
 
         Account account = Account.builder()
-                .fullName(registerRequest.getFullName())
-                .email(registerRequest.getEmail())
+                .fullName(registerRequest.getFullName() != null ? registerRequest.getFullName().trim() : "")
+                .email(normalizedEmail)
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .phone(registerRequest.getPhone())
                 .role(studentRole)
@@ -70,9 +74,13 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest loginRequest) {
+        String normalizedEmail = loginRequest.getEmail() != null 
+                ? loginRequest.getEmail().trim().toLowerCase() 
+                : "";
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
+                        normalizedEmail,
                         loginRequest.getPassword()
                 )
         );
@@ -101,19 +109,19 @@ public class AuthService {
     }
 
     public void forgotPassword(String email) {
-        // Stub/Mock forgot password flow for MVP
-        if (!accountRepository.existsByEmail(email)) {
+        String normalizedEmail = email != null ? email.trim().toLowerCase() : "";
+        if (!accountRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new BadRequestException("User not found with email: " + email);
         }
         String mockResetCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        log.info("MOCK MAIL SYSTEM: Sending reset code {} to email {}", mockResetCode, email);
+        log.info("MOCK MAIL SYSTEM: Sending reset code {} to email {}", mockResetCode, normalizedEmail);
     }
 
     @Transactional
     public void resetPassword(String email, String resetCode, String newPassword) {
-        // Stub/Mock reset password verification
-        log.info("MOCK MAIL SYSTEM: Verification of code {} for email {}", resetCode, email);
-        Account account = accountRepository.findByEmail(email)
+        String normalizedEmail = email != null ? email.trim().toLowerCase() : "";
+        log.info("MOCK MAIL SYSTEM: Verification of code {} for email {}", resetCode, normalizedEmail);
+        Account account = accountRepository.findByEmailIgnoreCase(normalizedEmail)
                 .orElseThrow(() -> new BadRequestException("User not found with email: " + email));
         account.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(account);
