@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [validationError, setValidationError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slowLoading, setSlowLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,6 +31,9 @@ export default function RegisterPage() {
     setValidationError("");
 
     setLoading(true);
+    setSlowLoading(false);
+    const slowTimer = setTimeout(() => setSlowLoading(true), 2000);
+
     try {
       await register(fullName, email, password);
       const params = new URLSearchParams(window.location.search);
@@ -38,7 +42,9 @@ export default function RegisterPage() {
     } catch (err) {
       // handled by AuthContext
     } finally {
+      clearTimeout(slowTimer);
       setLoading(false);
+      setSlowLoading(false);
     }
   };
 
@@ -184,7 +190,10 @@ export default function RegisterPage() {
                   className="w-full h-10 rounded-full bg-gold hover:bg-gold-light text-[#0F172A] font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {loading ? (
-                    <div className="w-3.5 h-3.5 border-2 border-[#0F172A]/20 border-t-[#0F172A] rounded-full animate-spin" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-3.5 h-3.5 border-2 border-[#0F172A]/20 border-t-[#0F172A] rounded-full animate-spin" />
+                      <span>{slowLoading ? "Connecting to secure server..." : "Creating Account..."}</span>
+                    </div>
                   ) : (
                     <>
                       <span>Create Account</span>

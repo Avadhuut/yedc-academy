@@ -11,19 +11,19 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 10000
-      minimum-idle: 2
+      minimum-idle: 3
       maximum-pool-size: 10
       idle-timeout: 300000
       max-lifetime: 580000
-      keepalive-time: 30000
+      keepalive-time: 25000
       validation-timeout: 3000
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
@@ -47,7 +47,7 @@ spring:
 logging:
   level:
     org.springframework.security: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: WARN
 
 razorpay:
   key:

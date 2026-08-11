@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slowLoading, setSlowLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState("");
 
@@ -32,6 +33,9 @@ export default function LoginPage() {
     }
     setValidationError("");
     setLoading(true);
+    setSlowLoading(false);
+    const slowTimer = setTimeout(() => setSlowLoading(true), 2000);
+
     try {
       await login(email, password);
       const params = new URLSearchParams(window.location.search);
@@ -40,7 +44,9 @@ export default function LoginPage() {
     } catch (err) {
       // handled by AuthContext
     } finally {
+      clearTimeout(slowTimer);
       setLoading(false);
+      setSlowLoading(false);
     }
   };
 
@@ -229,7 +235,10 @@ export default function LoginPage() {
                     className="w-full h-10 rounded-full bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     {loading ? (
-                      <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      <div className="flex items-center gap-2">
+                        <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        <span>{slowLoading ? "Connecting to secure server..." : "Signing In..."}</span>
+                      </div>
                     ) : (
                       <>
                         <span>Sign In</span>

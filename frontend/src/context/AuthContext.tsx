@@ -50,8 +50,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(false);
 
-    // Warm-up ping to wake up backend if sleeping (non-blocking)
-    fetch(`${API_BASE_URL}/courses`, { method: 'GET' }).catch(() => {});
+    // Warm-up ping to wake up backend fast if sleeping (non-blocking)
+    const pingBackend = () => {
+      fetch(`${API_BASE_URL}/ping`, { method: 'GET', cache: 'no-store' }).catch(() => {});
+    };
+    pingBackend();
+
+    // Periodic client keepalive every 4 minutes while tab is open
+    const interval = setInterval(pingBackend, 4 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   const login = async (email: string, password: string) => {
